@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>RoutineHub · Meals</title>
 
-<meta name="theme-color" content="#0c1917">
+<meta name="theme-color" content="#101013">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{--bg:#0b0b0b;--card:#0b0b0b;--text:#d6d6d6;--mute:#8a8a8a;--acc:#ff5c4d;--accT:#0b0b0b;--line:#585858;--ok:#0b0b0b;--okT:#9be28f;--warn:#0b0b0b;--warnT:#ffd25e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);color-scheme:dark}
@@ -163,7 +163,7 @@ function bind(){
  var q=function(s){return document.querySelectorAll(s)};
  q("[data-l]").forEach(function(e){e.onchange=function(){S.plan[+e.dataset.l][0]=e.value;save();render()}});
  q("[data-n]").forEach(function(e){e.onchange=function(){S.plan[+e.dataset.n][1]=e.value;save();render()}});
- q("[data-k]").forEach(function(e){e.onchange=function(){var a=e.dataset.k.split(",");S.ck[+a[0]][+a[1]]=e.checked?1:0;save();render()}});
+ q("[data-k]").forEach(function(e){e.onchange=function(){var a=e.dataset.k.split(",");S.ck[+a[0]][+a[1]]=e.checked?1:0;if(e.checked&&window.parent!==window)window.parent.postMessage({type:"routinehub:xp",activity:"meal",slot:+a[1]},window.location.origin);save();render()}});
  q("[data-iv]").forEach(function(e){e.onchange=function(){S.inv[e.dataset.iv]=+e.value||0;save();render()}});
  q("[data-s]").forEach(function(e){e.onchange=function(){S.snack[+e.dataset.s]=e.checked?1:0;save();render()}});
  var t=document.getElementById("tg");if(t)t.onchange=function(){S.target=+t.value||2711;save();render()};

@@ -1,14 +1,14 @@
 :root {
   color-scheme: dark;
-  --rh-bg: #0c1917;
-  --rh-surface: #142320;
-  --rh-surface-raised: #172b26;
-  --rh-surface-2: #1b2e29;
-  --rh-text: #eff6f1;
-  --rh-muted: #9aada5;
-  --rh-accent: #7de0b0;
-  --rh-line: #2c4840;
-  --rh-shadow: 0 12px 32px #0003;
+  --rh-bg: #101013;
+  --rh-surface: #19191d;
+  --rh-surface-raised: #232126;
+  --rh-surface-2: #29262a;
+  --rh-text: #eee8dc;
+  --rh-muted: #aaa092;
+  --rh-accent: #c49a5a;
+  --rh-line: #494039;
+  --rh-shadow: 0 14px 36px #0006;
   --rh-radius: 18px;
 
   /* Shared aliases used by the three existing page stylesheets. */
@@ -39,7 +39,42 @@ body {
 
 body.routinehub-page {
   min-height: 100vh;
-  background: radial-gradient(ellipse at 50% -18%, #244438 0%, var(--rh-bg) 58%);
+  background: radial-gradient(ellipse at 50% -18%, #342b21 0%, var(--rh-bg) 58%);
+}
+
+body.routinehub-page .site-header {
+  background: #101013ed;
+  border-bottom-color: var(--rh-line);
+}
+
+body.routinehub-page .global-nav {
+  background: #101013f2;
+  border-top-color: var(--rh-line);
+}
+
+body.routinehub-page .global-nav button.active {
+  background: var(--rh-accent);
+  color: #17130e;
+}
+
+body.routinehub-page .brand-mark {
+  color: #17130e;
+  box-shadow: 0 8px 26px #c49a5a35;
+}
+
+body.routinehub-page .meter i,
+body.routinehub-page .progressbar i {
+  background: linear-gradient(90deg, #8c6739, #e2bf7b);
+}
+
+body.meals-page nav {
+  background: #101013f2;
+  border-color: var(--rh-line);
+}
+
+body.lift-page .tabs {
+  background: #101013f2;
+  border-color: var(--rh-line);
 }
 
 body.routinehub-page .card,
@@ -87,6 +122,150 @@ body.routinehub-page .eyebrow {
   text-transform: uppercase;
 }
 
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+body.routinehub-page .xp-badge {
+  border: 1px solid #79603c;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #332a1e, #201b16);
+  color: #e5c58e;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.quest-panel {
+  border-color: #79603c !important;
+  background: radial-gradient(ellipse at 8% 0%, #4a3824 0%, #211d1b 54%, #18181c 100%) !important;
+  box-shadow: inset 0 1px #e2c17c18, 0 16px 42px #0005 !important;
+}
+
+.quest-topline,
+.quest-title-row,
+.quest-meta,
+.quest-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quest-sigil {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #b89156;
+  border-radius: 50%;
+  background: #191612;
+  color: #e1bd79;
+  font-size: 23px;
+  box-shadow: 0 0 22px #d6a75d22, inset 0 0 12px #d6a75d16;
+}
+
+.quest-rank {
+  color: #f1dfbd;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -.3px;
+}
+
+.quest-level {
+  min-width: 58px;
+  padding: 8px 10px;
+  border: 1px solid #79603c;
+  border-radius: 12px;
+  color: #e5c58e;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.quest-level b {
+  display: block;
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
+.quest-meter,
+.quest-progress {
+  height: 8px;
+  overflow: hidden;
+  border: 1px solid #5c4a32;
+  border-radius: 999px;
+  background: #111114;
+}
+
+.quest-meter i,
+.quest-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8c6739, #e2bf7b);
+  box-shadow: 0 0 14px #d6a75d55;
+}
+
+.quest-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.quest-row {
+  justify-content: flex-start;
+  padding: 10px 11px;
+  border: 1px solid #ffffff12;
+  border-radius: 13px;
+  background: #0e0e10a8;
+}
+
+.quest-row.done {
+  border-color: #967344;
+  background: #c49a5a12;
+  opacity: 1;
+}
+
+.quest-check {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  border: 1px solid #6c5a42;
+  border-radius: 50%;
+  color: #b9a98f;
+  font-size: 13px;
+}
+
+.quest-row.done .quest-check {
+  border-color: #d5b16f;
+  background: #c49a5a;
+  color: #17130e;
+}
+
+.quest-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.quest-reward {
+  color: #d9b875;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.quest-note {
+  color: var(--rh-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 @media (prefers-reduced-motion: reduce) {
   body.routinehub-page *,
   body.routinehub-page *::before,
@@ -96,4 +275,11 @@ body.routinehub-page .eyebrow {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+@media (max-width: 520px) {
+  .header-meta { gap: 6px; }
+  .site-tagline { display: none; }
+  .xp-badge { padding: 6px 8px; font-size: 11px; }
+  .quest-panel { padding: 14px !important; }
 }
