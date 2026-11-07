@@ -65,11 +65,19 @@ if(routineVersion<12){
 if(routineVersion<13){
  [[30,/face|skin/i],[28,/face|skin/i]].forEach(function(pair){var item=S.r.filter(function(b){return b.id===pair[0]})[0],seed=DEF.filter(function(b){return b.id===pair[0]})[0];if(item&&!Array.isArray(item.detail)&&seed&&pair[1].test(item.n))item.detail=JSON.parse(JSON.stringify(seed.detail))});
 }
+var skinTemplates={morning:DEF.filter(function(b){return b.id===30})[0].detail,evening:DEF.filter(function(b){return b.id===28})[0].detail};
+S.r.forEach(function(item){
+ if(Array.isArray(item.detail)&&item.detail.length)return;
+ var label=String(item.n||"");
+ if(!/(face|facial|skin[\s-]?care)/i.test(label))return;
+ var hour=parseInt(String(item.t||"0:00").slice(0,2),10)||0,evening=/evening|night/i.test(label)||hour>=15;
+ item.detail=JSON.parse(JSON.stringify(evening?skinTemplates.evening:skinTemplates.morning));
+});
 if(!Number.isFinite(+S.wt)||S.wt<1)S.wt=2000;
 if(!S.xp||typeof S.xp!=="object")S.xp={total:0,days:{}};
 if(!Number.isFinite(+S.xp.total)||S.xp.total<0)S.xp.total=0;else S.xp.total=+S.xp.total;
 if(!S.xp.days||typeof S.xp.days!=="object")S.xp.days={};
-S.v=13;
+S.v=14;
 function save(){try{localStorage.setItem("rt1",JSON.stringify(S))}catch(e){alert("RoutineHub could not save your change. Browser storage may be full or disabled.")}}
 save();
 function key(d){d=d||new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}

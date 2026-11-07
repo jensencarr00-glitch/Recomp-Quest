@@ -237,6 +237,15 @@ test("skincare guidance expands under the morning and evening routine items", ()
   assert(migrated.context.S.r[1].detail.length > 0, "existing customized evening face-care task receives the steps");
   assert.equal(migrated.context.S.days["2025-01-01"].d[30], 1, "migration preserves completion history");
   assert.match(migrated.dom.document.getElementById("app").innerHTML, /Show skincare steps/);
+
+  const legacyCustom = { r: [
+    { id: 701, t: "08:15", n: "Morning face care: gently cleanse and moisturise", c: "free" },
+    { id: 702, t: "21:30", n: "Evening face care: cleanse and moisturise", c: "free" },
+  ], days: { "2025-01-02": { d: { 701: 1 }, w: 0 } }, wt: 2000, v: 13 };
+  const migratedLegacy = runScript(read("routine.js"), "routine.js#legacy-custom-skincare", { storage: localStorage({ rt1: JSON.stringify(legacyCustom) }) });
+  assert(migratedLegacy.context.S.r.every((item) => item.detail?.length > 0), "migration finds face-care tasks even with custom IDs and an already-upgraded version");
+  assert.equal(migratedLegacy.context.S.r[0].n, legacyCustom.r[0].n);
+  assert.equal(migratedLegacy.context.S.days["2025-01-02"].d[701], 1);
 });
 
 test("Meals and Lift retain their own stores and notify only the parent app of earned actions", () => {
