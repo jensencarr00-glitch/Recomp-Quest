@@ -213,6 +213,24 @@ test("oral-care defaults show the recommended daily and optional frequencies", (
   assert.equal(routine.find((item) => item.id === 62).d, undefined, "tongue scraping is scheduled every day");
 });
 
+test("skincare guidance expands under the morning and evening routine items", () => {
+  const { context, dom } = runScript(read("routine.js"), "routine.js#skincare");
+  const morning = context.S.r.find((item) => item.id === 30);
+  const evening = context.S.r.find((item) => item.id === 28);
+  assert.match(dom.document.getElementById("app").innerHTML, /class="routine-detail"/);
+  assert.match(dom.document.getElementById("app").innerHTML, /Wash your hands/);
+  assert(morning.detail.some((step) => /lukewarm water/.test(step)));
+  assert(morning.detail.some((step) => /10–20 seconds/.test(step)));
+  assert(morning.detail.some((step) => /SPF 30–50 sunscreen/.test(step)));
+  assert(evening.detail.some((step) => /pea-sized amount of moisturiser/.test(step)));
+  assert(evening.detail.some((step) => /lip balm if you want/.test(step)));
+
+  const custom = { r: [{ id: 30, t: "09:15", n: "My own face routine", c: "free" }], days: {}, wt: 1800, v: 11 };
+  const migrated = runScript(read("routine.js"), "routine.js#custom-skincare", { storage: localStorage({ rt1: JSON.stringify(custom) }) });
+  assert.equal(migrated.context.S.r[0].n, "My own face routine", "migration preserves a customized routine label");
+  assert.equal(migrated.context.S.r[0].detail, undefined, "migration does not add default instructions to a customized item");
+});
+
 test("Meals and Lift retain their own stores and notify only the parent app of earned actions", () => {
   const mealsStorage = localStorage();
   const meals = runScript(inlineScript("meals.html"), "meals.html#inline", { storage: mealsStorage, embedded: true });

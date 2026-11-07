@@ -4,7 +4,7 @@ var DEF=[
 {id:1,t:"08:00",n:"Wake up, drink water, open curtains and get 10–20 minutes of daylight",c:"sleep",ml:250},
 {id:2,t:"08:05",n:"Use the toilet, wash hands and make your bed",c:"free"},
 {id:21,t:"08:10",n:"Weigh in (after toilet, before breakfast)",c:"free",d:"d1"},
-{id:30,t:"08:15",n:"Face: gentle cleanser, moisturiser and SPF 30–50",c:"free"},
+{id:30,t:"08:15",n:"Face: gentle cleanser, moisturiser and SPF 30–50",c:"free",detail:["Wash your hands, then wet your face with lukewarm water.","Use one pump of gentle face wash on wet hands and rub your hands together to make a lather.","With your fingertips, massage gently over your chin, forehead and cheeks in slow circles for about 10–20 seconds. Do not scrub.","Rinse all cleanser away with lukewarm water, then pat your face dry with a clean towel.","Gently spread a pea-sized amount of moisturiser over your cheeks, chin and forehead.","Finish with your SPF 30–50 sunscreen as the last morning skincare step; follow its label for application and reapplication."]},
 {id:31,t:"08:20",n:"Brush teeth for 2 minutes with fluoride toothpaste; spit, don't rinse",c:"free"},
 {id:32,t:"08:25",n:"Shower: wash underarms, external groin, bottom, feet and sweaty areas",c:"free",d:"days:1,3,5,0"},
 {id:33,t:"08:25",n:"Non-shower day: wash face, underarms, external groin and feet with a clean flannel",c:"free",d:"days:2,4,6"},
@@ -31,7 +31,7 @@ var DEF=[
 {id:19,t:"22:00",n:"Floss / clean between teeth with interdental brushes",c:"free"},
 {id:27,t:"22:10",n:"Brush teeth for 2 minutes with fluoride toothpaste; spit, don't rinse",c:"free"},
 {id:62,t:"22:05",n:"Gently scrape your tongue once daily",c:"free"},
-{id:28,t:"22:25",n:"Wash face and apply moisturiser; lip balm if needed",c:"free"},
+{id:28,t:"22:25",n:"Wash face and apply moisturiser; lip balm if needed",c:"free",detail:["Wash your hands, then wet your face with lukewarm water.","Use one pump of gentle face wash on wet hands and rub your hands together to make a lather.","With your fingertips, massage gently over your chin, forehead and cheeks in slow circles for about 10–20 seconds. Do not scrub.","Rinse all cleanser away with lukewarm water, then pat your face dry with a clean towel.","Gently spread a pea-sized amount of moisturiser over your cheeks, chin and forehead.","Apply lip balm if you want to."]},
 {id:29,t:"22:40",n:"Prepare tomorrow: check schedule, tidy bedside and set alarm",c:"free"},
 {id:20,t:"23:00",n:"Wind down: dim lights, reduce screens and relax",c:"sleep"},
 {id:100,t:"00:00",n:"Lights out — target 8 hours until 08:00",c:"sleep"},
@@ -59,11 +59,14 @@ if(routineVersion<11){
  if(oldFloss&&oldFloss.n==="Floss between teeth, then gently clean tongue")oldFloss.n="Floss / clean between teeth with interdental brushes";
  [19,62].forEach(function(id){var seed=DEF.filter(function(b){return b.id===id})[0];if(seed&&!S.r.some(function(b){return b.id===id}))S.r.push(JSON.parse(JSON.stringify(seed)))});
 }
+if(routineVersion<12){
+ [[30,"Face: gentle cleanser, moisturiser and SPF 30–50"],[28,"Wash face and apply moisturiser; lip balm if needed"]].forEach(function(pair){var item=S.r.filter(function(b){return b.id===pair[0]})[0],seed=DEF.filter(function(b){return b.id===pair[0]})[0];if(item&&item.n===pair[1]&&!Array.isArray(item.detail)&&seed)item.detail=JSON.parse(JSON.stringify(seed.detail))});
+}
 if(!Number.isFinite(+S.wt)||S.wt<1)S.wt=2000;
 if(!S.xp||typeof S.xp!=="object")S.xp={total:0,days:{}};
 if(!Number.isFinite(+S.xp.total)||S.xp.total<0)S.xp.total=0;else S.xp.total=+S.xp.total;
 if(!S.xp.days||typeof S.xp.days!=="object")S.xp.days={};
-S.v=11;
+S.v=12;
 function save(){try{localStorage.setItem("rt1",JSON.stringify(S))}catch(e){alert("RoutineHub could not save your change. Browser storage may be full or disabled.")}}
 save();
 function key(d){d=d||new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
@@ -115,7 +118,7 @@ function today(){
  h+='<div class="card"><b>Routine progress</b><div class="tip" style="margin-top:6px">'+bar(p,20)+' '+p+'%</div></div>';
  var sp=slp();if(sp)h+='<div class="card"><b>> SLEEP</b><div class="tip" style="margin-top:6px">Lights out '+sp.bed+', wake '+sp.wake+', plan '+sp.h.toFixed(1)+' hours</div><div class="row" style="margin-top:6px"><span class="tip">Last night (hours)</span><input type="number" step="0.5" id="sl" value="'+(dd.sl||"")+'" inputmode="decimal" style="width:90px"></div></div>';
  h+='<div class="card"><b>Water</b><div class="tip" style="margin-top:6px">'+bar(wp,20)+' '+dd.w+' / '+S.wt+' ml</div><div class="w"><button data-w="250">+250 ml</button><button data-w="100">+100 ml</button><button data-w="-250">−250 ml</button></div></div>';
- L.forEach(function(b,i){h+='<div class="card'+(dd.d[b.id]?' done':'')+(i===nx?' next':'')+'"><div class="row"><input type="checkbox" data-b="'+b.id+'"'+(dd.d[b.id]?' checked':'')+'><span class="t">'+esc(b.t)+'</span><span style="flex:1">'+esc(b.n)+'</span><span class="tip">'+(b.ml?"+"+b.ml+"ml ":"")+(IC[b.c]||"")+'</span></div>'+(i===nx?'<div class="tip rd" style="margin-top:4px">&gt; next up</div>':'')+'</div>'});
+ L.forEach(function(b,i){h+='<div class="card'+(dd.d[b.id]?' done':'')+(i===nx?' next':'')+'"><div class="row"><input type="checkbox" data-b="'+b.id+'"'+(dd.d[b.id]?' checked':'')+'><span class="t">'+esc(b.t)+'</span><span style="flex:1">'+esc(b.n)+'</span><span class="tip">'+(b.ml?"+"+b.ml+"ml ":"")+(IC[b.c]||"")+'</span></div>'+(Array.isArray(b.detail)&&b.detail.length?'<details class="routine-detail"><summary>View steps</summary><ol>'+b.detail.map(function(step){return'<li>'+esc(step)+'</li>'}).join('')+'</ol></details>':'')+(i===nx?'<div class="tip rd" style="margin-top:4px">&gt; next up</div>':'')+'</div>'});
  return h}
 function week(){
  var h='<div class="page-intro"><p class="eyebrow">YOUR LAST SEVEN DAYS</p><h1>This week</h1></div>',tot=0,st=0,run=0,nm=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];

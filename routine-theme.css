@@ -266,6 +266,31 @@ body.routinehub-page .xp-badge {
   line-height: 1.45;
 }
 
+.routine-detail {
+  margin: 10px 0 0 34px;
+  color: var(--rh-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.routine-detail summary {
+  width: fit-content;
+  color: var(--rh-gold, #d9b875);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.routine-detail ol {
+  display: grid;
+  gap: 5px;
+  padding-left: 20px;
+  margin: 8px 0 2px;
+}
+
+@media (max-width: 520px) {
+  .routine-detail { margin-left: 30px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   body.routinehub-page *,
   body.routinehub-page *::before,
