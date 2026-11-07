@@ -47,7 +47,7 @@ var DEF=[
 {id:60,t:"11:30",n:"Monthly clean: windows, mirrors and inside appliances",c:"clean",d:"m1"},
 {id:61,t:"12:00",n:"Monthly declutter: one drawer, shelf or storage area",c:"clean",d:"m1"}
 ];
-var S,tab=1;
+var S,tab=1,activeSection="today";
 try{S=JSON.parse(localStorage.getItem("rt1"))}catch(e){}
 if(!S||!Array.isArray(S.r)||!S.days||typeof S.days!=="object")S={r:JSON.parse(JSON.stringify(DEF)),days:{},wt:2000,v:10};
 S.r=S.r.filter(function(b){return b&&Number.isFinite(+b.id)&&typeof b.t==="string"&&typeof b.n==="string"});
@@ -88,8 +88,7 @@ function edit(){
  var h='<h1>Routine settings</h1><p class="tip">Change times, names or switch blocks off. Times before 06:00 count as after midnight.</p><div class="card"><span class="tip">Water target (ml)</span><input type="number" id="wt" value="'+S.wt+'" inputmode="numeric"></div><div class="card"><b>Shift the whole day</b><div class="tip">Moves every time earlier or later. Use it to move your sleep 15 minutes at a time.</div><button data-sh="-15">15 min earlier</button> <button data-sh="15">15 min later</button></div>';
  list().forEach(function(b){h+='<div class="card"><div class="row"><input type="checkbox" data-on="'+b.id+'"'+(b.on!==false?' checked':'')+'><input type="time" data-t="'+b.id+'" value="'+esc(b.t)+'" style="width:120px"><select data-d="'+b.id+'" style="width:110px"><option value="all"'+(!b.d?" selected":"")+'>Every day</option><option value="wk"'+(b.d==="wk"?" selected":"")+'>Mon-Fri</option><option value="we"'+(b.d==="we"?" selected":"")+'>Sat-Sun</option><option value="d1"'+(b.d==="d1"?" selected":"")+'>Mon only</option><option value="d0"'+(b.d==="d0"?" selected":"")+'>Sun only</option><option value="days:1,3,5,0"'+(b.d==="days:1,3,5,0"?" selected":"")+'>Mon/Wed/Fri/Sun</option><option value="days:0,3"'+(b.d==="days:0,3"?" selected":"")+'>Wed/Sun</option><option value="m1"'+(b.d==="m1"?" selected":"")+'>Monthly (1st)</option></select><button data-x="'+b.id+'">[delete]</button></div><input type="text" data-n="'+b.id+'" value="'+esc(b.n)+'" style="margin-top:6px"></div>'});
  return h+'<button id="add">Add routine block</button> <button id="rs" class="tip">Reset routine</button><div class="card backup-card"><b>Back up your data</b><p class="tip">All three sections are stored in this browser. Export a combined backup before changing devices or restoring data.</p><button data-all="export">Download full backup</button> <button data-all="import">Restore full backup</button><input id="backupFile" type="file" accept="application/json" hidden></div>'}
-function render(){var y=window.scrollY;document.getElementById("app").innerHTML=tab===1?today():tab===2?week():edit();
- for(var i=1;i<4;i++)document.getElementById("t"+i).className=tab===i?"on":"";window.scrollTo(0,y);bind()}
+function render(){var y=window.scrollY;document.getElementById("app").innerHTML=tab===1?today():tab===2?week():edit();window.scrollTo(0,y);bind()}
 function bind(){var q=function(s){return document.querySelectorAll(s)};
  q("[data-b]").forEach(function(e){e.onchange=function(){var d=day(key()),b=S.r.filter(function(x){return x.id==e.dataset.b})[0];d.d[e.dataset.b]=e.checked?1:0;if(b&&b.ml)d.w=Math.max(0,d.w+(e.checked?1:-1)*b.ml);save();render()}});
  q("[data-w]").forEach(function(e){e.onclick=function(){var d=day(key());d.w=Math.max(0,d.w+(+e.dataset.w));save();render()}});
@@ -113,10 +112,17 @@ function showHubTab(which){
  const m=document.getElementById("embedded-meals"),l=document.getElementById("embedded-lift"),routine=document.getElementById("routine-view");
  m.classList.remove("active");l.classList.remove("active");
  routine.hidden=which!=="routine";
- document.querySelectorAll("[data-hub]").forEach(b=>b.classList.toggle("active",b.dataset.hub===which));
+ document.querySelectorAll("[data-section]").forEach(b=>{const selected=b.dataset.section===activeSection;b.classList.toggle("active",selected);b.setAttribute("aria-current",selected?"page":"false")});
  if(which==="meals")m.classList.add("active");else if(which==="lift")l.classList.add("active");
 }
-document.querySelectorAll("[data-hub]").forEach(b=>b.onclick=function(){showHubTab(b.dataset.hub)});
-render();showHubTab("routine");
+function showSection(section){
+ activeSection=section;
+ if(section==="today"||section==="week"||section==="edit"){
+  tab=section==="today"?1:section==="week"?2:3;
+  showHubTab("routine");render();
+ }else if(section==="meals"||section==="lift")showHubTab(section);
+}
+document.querySelectorAll("[data-section]").forEach(b=>b.onclick=function(){showSection(b.dataset.section)});
+render();showSection("today");
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(function(){});
 

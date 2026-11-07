@@ -16,19 +16,16 @@
   <span class="site-tagline">A little better, every day.</span>
 </header>
 <div id="routine-view">
-  <nav class="section-tabs" aria-label="Routine views">
-    <button id="t1" class="on" type="button">Today</button>
-    <button id="t2" type="button">Week</button>
-    <button id="t3" type="button">Edit</button>
-  </nav>
   <main id="app"></main>
 </div>
 <section id="embedded-meals" class="embedded-view" aria-label="Meals"><iframe id="mealsFrame" title="Meals" src="meals.html"></iframe></section>
 <section id="embedded-lift" class="embedded-view" aria-label="Lift"><iframe id="liftFrame" title="Lift" src="lift.html"></iframe></section>
 <nav class="global-nav" aria-label="Main navigation">
-  <button type="button" data-hub="routine" class="active"><span aria-hidden="true">◷</span>RoutineHub</button>
-  <button type="button" data-hub="meals"><span aria-hidden="true">◉</span>Meals</button>
-  <button type="button" data-hub="lift"><span aria-hidden="true">↗</span>Lift</button>
+  <button type="button" data-section="today" class="active"><span aria-hidden="true">◷</span>Today</button>
+  <button type="button" data-section="week"><span aria-hidden="true">▦</span>Week</button>
+  <button type="button" data-section="edit"><span aria-hidden="true">✎</span>Edit</button>
+  <button type="button" data-section="meals"><span aria-hidden="true">◉</span>Meals</button>
+  <button type="button" data-section="lift"><span aria-hidden="true">↗</span>Lift</button>
 </nav>
 <script src="routine.js"></script>
 </body>

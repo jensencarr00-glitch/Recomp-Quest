@@ -1,1 +1,1 @@
-{"name":"RoutineHub","short_name":"RoutineHub","start_url":"./index.html","display":"standalone","background_color":"#0c1917","theme_color":"#0c1917"}
+{"id":"./index.html","name":"RoutineHub · Daily routines, meals and training","short_name":"RoutineHub","description":"A private, offline-friendly home for routines, meal planning and dumbbell training.","start_url":"./index.html","scope":"./","display":"standalone","background_color":"#0c1917","theme_color":"#0c1917","orientation":"any"}
