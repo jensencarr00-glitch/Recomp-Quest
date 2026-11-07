@@ -28,8 +28,9 @@ var DEF=[
 {id:40,t:"20:00",n:"Five-minute room reset: clothes away, surfaces clear, rubbish checked",c:"clean"},
 {id:41,t:"20:10",n:"Wash dishes and wipe kitchen worktops after eating",c:"clean"},
 {id:18,t:"21:00",n:"Water; prepare tomorrow's clothes and any food that needs defrosting",c:"water",ml:200},
-{id:19,t:"22:00",n:"Floss between teeth, then gently clean tongue",c:"free"},
+{id:19,t:"22:00",n:"Floss / clean between teeth with interdental brushes",c:"free"},
 {id:27,t:"22:10",n:"Brush teeth for 2 minutes with fluoride toothpaste; spit, don't rinse",c:"free"},
+{id:62,t:"22:05",n:"Gently scrape your tongue once daily",c:"free"},
 {id:28,t:"22:25",n:"Wash face and apply moisturiser; lip balm if needed",c:"free"},
 {id:29,t:"22:40",n:"Prepare tomorrow: check schedule, tidy bedside and set alarm",c:"free"},
 {id:20,t:"23:00",n:"Wind down: dim lights, reduce screens and relax",c:"sleep"},
@@ -52,11 +53,17 @@ try{S=JSON.parse(localStorage.getItem("rt1"))}catch(e){}
 if(!S||!Array.isArray(S.r)||!S.days||typeof S.days!=="object")S={r:JSON.parse(JSON.stringify(DEF)),days:{},wt:2000,v:10};
 S.r=S.r.filter(function(b){return b&&Number.isFinite(+b.id)&&typeof b.t==="string"&&typeof b.n==="string"});
 if(!S.r.length)S.r=JSON.parse(JSON.stringify(DEF));
+var routineVersion=+S.v||0;
+if(routineVersion<11){
+ var oldFloss=S.r.filter(function(b){return b.id===19})[0];
+ if(oldFloss&&oldFloss.n==="Floss between teeth, then gently clean tongue")oldFloss.n="Floss / clean between teeth with interdental brushes";
+ [19,62].forEach(function(id){var seed=DEF.filter(function(b){return b.id===id})[0];if(seed&&!S.r.some(function(b){return b.id===id}))S.r.push(JSON.parse(JSON.stringify(seed)))});
+}
 if(!Number.isFinite(+S.wt)||S.wt<1)S.wt=2000;
 if(!S.xp||typeof S.xp!=="object")S.xp={total:0,days:{}};
 if(!Number.isFinite(+S.xp.total)||S.xp.total<0)S.xp.total=0;else S.xp.total=+S.xp.total;
 if(!S.xp.days||typeof S.xp.days!=="object")S.xp.days={};
-S.v=10;
+S.v=11;
 function save(){try{localStorage.setItem("rt1",JSON.stringify(S))}catch(e){alert("RoutineHub could not save your change. Browser storage may be full or disabled.")}}
 save();
 function key(d){d=d||new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}

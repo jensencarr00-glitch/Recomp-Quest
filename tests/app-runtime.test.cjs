@@ -140,6 +140,9 @@ test("RoutineHub XP, ranks, quests, route navigation and old customizations work
   assert.match(dom.document.getElementById("app").innerHTML, /My saved walk/);
   assert.equal(JSON.parse(storage.getItem("rt1")).r[0].n, "My saved walk");
   assert.equal(JSON.parse(storage.getItem("rt1")).wt, 1800);
+  assert.equal(context.S.r.find((item) => item.id === 19).n, "Floss / clean between teeth with interdental brushes");
+  assert.match(context.S.r.find((item) => item.id === 62).n, /scrape your tongue once daily/);
+  assert.equal(context.S.r.filter((item) => item.id === 62).length, 1, "oral-care migration adds each new checklist item only once");
   assert.equal(storage.getItem("mp4"), "preserve-meals");
   assert.equal(storage.getItem("lift_redesign_v1"), "preserve-lift");
 
@@ -197,6 +200,17 @@ test("RoutineHub XP, ranks, quests, route navigation and old customizations work
   context.save();
   assert.equal(JSON.parse(storage.getItem("rt1")).xp.total, context.S.xp.total);
   assert.match(dom.document.getElementById("app").innerHTML, /Today/);
+});
+
+test("oral-care defaults show the recommended daily and optional frequencies", () => {
+  const { context } = runScript(read("routine.js"), "routine.js#new-user");
+  const routine = context.S.r;
+  assert.equal(routine.filter((item) => /Brush teeth for 2 minutes with fluoride toothpaste/.test(item.n)).length, 2, "brushing is scheduled twice daily");
+  assert.equal(routine.filter((item) => /Floss \/ clean between teeth with interdental brushes/.test(item.n)).length, 1);
+  assert.equal(routine.filter((item) => /scrape your tongue once daily/.test(item.n)).length, 1);
+  assert.match(routine.find((item) => item.id === 26).n, /if using/);
+  assert.equal(routine.find((item) => item.id === 19).d, undefined, "interdental cleaning is scheduled every day");
+  assert.equal(routine.find((item) => item.id === 62).d, undefined, "tongue scraping is scheduled every day");
 });
 
 test("Meals and Lift retain their own stores and notify only the parent app of earned actions", () => {
