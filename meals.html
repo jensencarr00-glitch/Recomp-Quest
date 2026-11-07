@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>RoutineHub · Meals</title>
 
-<meta name="theme-color" content="#07191c">
+<meta name="theme-color" content="#0c1917">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{--bg:#0b0b0b;--card:#0b0b0b;--text:#d6d6d6;--mute:#8a8a8a;--acc:#ff5c4d;--accT:#0b0b0b;--line:#585858;--ok:#0b0b0b;--okT:#9be28f;--warn:#0b0b0b;--warnT:#ffd25e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);color-scheme:dark}
@@ -71,8 +71,9 @@ h1{font-size:25px;color:var(--text);letter-spacing:-.5px;text-transform:none}h2{
 .pill{padding:4px 9px;background:#1b2e29!important}.pill:before,.pill:after{content:none!important}
 @media(min-width:900px){.pg{padding-left:24px;padding-right:24px}}
 </style>
+<link rel="stylesheet" href="routine-theme.css">
 </head>
-<body>
+<body class="routinehub-page meals-page">
 <main id="app"></main>
 <div id="tb" hidden><span id="tt"></span><button class="link" id="tx">[cancel]</button></div>
 <nav><button id="t1">Plan</button><button id="t2">Cook</button><button id="t3">Stock</button></nav>
@@ -108,7 +109,7 @@ function plan(){
  var tk=0,tp=0,def=0,nx=-1,hv=have(),h="";
  for(var j=13;j>=0;j--)if(!dayDone(j))nx=j;var t0=tdy();if(t0>=0)nx=t0;
  for(var i=0;i<14;i++){var d=dayTot(i);tk+=d.k;tp+=d.p;if(d.k<=S.target+25)def++}
- h+='<pre class="art">  ( (   ) )\n   ) ) ( (\n .~~~~~~~~~.\n |  MEAL   |]\n |  PREP   |\n  ~~~~~~~~~</pre><h1>== MEAL PLAN ==</h1><div class="sum"><div><b>'+n(tk/14)+'</b><span>avg kcal/day</span></div><div><b>'+n(tp/14)+'g</b><span>avg protein</span></div><div><b>'+def+'/14</b><span>days at/under target</span></div></div>';
+ h+='<p class="eyebrow">14 DAY PLAN</p><h1>Meals</h1><div class="sum"><div><b>'+n(tk/14)+'</b><span>avg kcal/day</span></div><div><b>'+n(tp/14)+'g</b><span>avg protein</span></div><div><b>'+def+'/14</b><span>days at/under target</span></div></div>';
  h+='<div class="card"><span class="lab" style="margin:0">Daily calorie target</span><input type="number" id="tg" value="'+S.target+'" inputmode="numeric"></div>';h+='<div class="card"><span class="lab" style="margin:0">Oil per cooked meal</span><select id="oil"><option value="2'+(S.oil===2?'" selected':'"')+'>15ml per meal (default)</option><option value="1'+(S.oil===1?'" selected':'"')+'>No oil (about -120 kcal per meal)</option></select></div>'+'<div class="card"><span class="lab" style="margin:0">Start date (highlights today)</span><input type="date" id="sd" value="'+(S.start||"")+'"></div>'+thaw(nx);
  for(var i=0;i<14;i++){var d=dayTot(i),df=d.k-S.target,p=S.plan[i],c=S.ck[i];
   h+='<div class="card'+(dayDone(i)?' done':'')+(i===nx?' next':'')+'" id="d'+i+'"><div class="row"><span class="day">Day '+(i+1)+(i===nx?' · Next up':'')+'</span><span class="pill '+(Math.abs(df)<=200?'ok':'warn')+'">'+n(d.k)+' kcal ('+(df>0?'+':'')+n(df)+')</span></div>'

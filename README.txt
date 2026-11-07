@@ -6,7 +6,8 @@ RoutineHub combines daily routines, meals and dumbbell training in one responsiv
 Files
 -----
 index.html       App shell and five-section navigation
-routine.css      Shared visual theme and responsive layout
+routine.css      RoutineHub layout and components
+routine-theme.css Shared palette, typography and common components
 routine.js       Routine, weekly summary and combined backup features
 meals.html       Meal plan, recipes, cooking flow, stock and meal backup
 lift.html        Upper/lower workout plan, logging, progress and Lift backup

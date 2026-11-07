@@ -1,5 +1,5 @@
-const CACHE="routinehub-static-v3";
-const FILES=["./","./index.html","./routine.css","./routine.js","./meals.html","./lift.html","./manifest.json","./icon-192.png","./icon-512.png"];
+const CACHE="routinehub-static-v4";
+const FILES=["./","./index.html","./routine.css","./routine-theme.css","./routine.js","./meals.html","./lift.html","./manifest.json","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)));self.skipWaiting()});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith("routinehub-static-")&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener("fetch",event=>{
