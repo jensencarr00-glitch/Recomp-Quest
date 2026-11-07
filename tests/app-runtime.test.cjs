@@ -248,6 +248,37 @@ test("skincare guidance expands under the morning and evening routine items", ()
   assert.equal(migratedLegacy.context.S.days["2025-01-02"].d[701], 1);
 });
 
+test("shower and hair-wash days migrate onto saved routines and follow the local calendar", () => {
+  const saved = { r: [
+    { id: 801, t: "08:25", n: "Shower: wash and dry thoroughly", c: "free" },
+    { id: 802, t: "08:25", n: "Non-shower day: wash with a clean flannel", c: "free" },
+    { id: 803, t: "08:50", n: "Hair washing: shampoo and condition", c: "free" },
+  ], days: { "2025-03-03": { d: { 801: 1 }, w: 500 } }, wt: 2000, v: 14 };
+  const { context, dom } = runScript(read("routine.js"), "routine.js#weekly-hygiene", { storage: localStorage({ rt1: JSON.stringify(saved) }) });
+  const [shower, nonShower, hair] = context.S.r;
+  assert.equal(shower.d, "days:1,3,5,0");
+  assert.equal(nonShower.d, "days:2,4,6");
+  assert.equal(hair.d, "days:0,3");
+  for (const [date, shouldShower, shouldHair] of [
+    ["2026-11-09", true, false], ["2026-11-10", false, false],
+    ["2026-11-11", true, true], ["2026-11-12", false, false],
+    ["2026-11-13", true, false], ["2026-11-14", false, false],
+    ["2026-11-15", true, true],
+  ]) {
+    assert.equal(context.app(shower, date), shouldShower, `shower schedule for ${date}`);
+    assert.equal(context.app(hair, date), shouldHair, `hair-wash schedule for ${date}`);
+  }
+  assert.equal(context.app(nonShower, "2026-11-10"), true);
+  assert.equal(context.app(nonShower, "2026-11-13"), false);
+  assert.equal(context.S.r[0].n, saved.r[0].n, "schedule migration preserves task names");
+  assert.equal(context.S.r[0].t, saved.r[0].t, "schedule migration preserves task times");
+  assert.equal(context.S.days["2025-03-03"].d[801], 1, "schedule migration preserves completion history");
+  assert.match(dom.document.getElementById("app").innerHTML, /YOUR LOCAL DAY/);
+
+  dom.navButtons.find((node) => node.dataset.section === "edit").click();
+  assert.match(dom.document.getElementById("app").innerHTML, /Tue\/Thu\/Sat/);
+});
+
 test("Meals and Lift retain their own stores and notify only the parent app of earned actions", () => {
   const mealsStorage = localStorage();
   const meals = runScript(inlineScript("meals.html"), "meals.html#inline", { storage: mealsStorage, embedded: true });

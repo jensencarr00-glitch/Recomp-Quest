@@ -73,11 +73,18 @@ S.r.forEach(function(item){
  var hour=parseInt(String(item.t||"0:00").slice(0,2),10)||0,evening=/evening|night/i.test(label)||hour>=15;
  item.detail=JSON.parse(JSON.stringify(evening?skinTemplates.evening:skinTemplates.morning));
 });
+if(routineVersion<15){
+ S.r.forEach(function(item){var label=String(item.n||"");
+  if(/non[\s-]?shower|no[\s-]?shower/i.test(label))item.d="days:2,4,6";
+  else if(/\bshower\b/i.test(label))item.d="days:1,3,5,0";
+  if(/\bhair[\s-]*wash(?:ing)?\b|\bwash(?:ing)?\b.*\bhair\b|\bshampoo\b/i.test(label))item.d="days:0,3";
+ });
+}
 if(!Number.isFinite(+S.wt)||S.wt<1)S.wt=2000;
 if(!S.xp||typeof S.xp!=="object")S.xp={total:0,days:{}};
 if(!Number.isFinite(+S.xp.total)||S.xp.total<0)S.xp.total=0;else S.xp.total=+S.xp.total;
 if(!S.xp.days||typeof S.xp.days!=="object")S.xp.days={};
-S.v=14;
+S.v=15;
 function save(){try{localStorage.setItem("rt1",JSON.stringify(S))}catch(e){alert("RoutineHub could not save your change. Browser storage may be full or disabled.")}}
 save();
 function key(d){d=d||new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
@@ -124,7 +131,7 @@ function today(){
  for(var i=0;i<L.length;i++)if(!dd.d[L[i].id]&&ord(L[i].t)>=nm-30){nx=i;break}
  if(nx<0)for(i=0;i<L.length;i++)if(!dd.d[L[i].id]){nx=i;break}
  var p=pct(k),wp=Math.round(100*dd.w/S.wt);
- var h='<div class="page-intro"><p class="eyebrow">YOUR DAILY RHYTHM</p><h1>Today</h1><p class="tip">Small, steady steps across routines, rest and hydration.</p></div>';
+ var h='<div class="page-intro"><p class="eyebrow">YOUR DAILY RHYTHM</p><h1>Today</h1><p class="tip"><span class="eyebrow" style="display:inline">YOUR LOCAL DAY</span> · '+esc(nw.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"}))+'<br>Small, steady steps across routines, rest and hydration.</p></div>';
  h+=questCard();
  h+='<div class="card"><b>Routine progress</b><div class="tip" style="margin-top:6px">'+bar(p,20)+' '+p+'%</div></div>';
  var sp=slp();if(sp)h+='<div class="card"><b>> SLEEP</b><div class="tip" style="margin-top:6px">Lights out '+sp.bed+', wake '+sp.wake+', plan '+sp.h.toFixed(1)+' hours</div><div class="row" style="margin-top:6px"><span class="tip">Last night (hours)</span><input type="number" step="0.5" id="sl" value="'+(dd.sl||"")+'" inputmode="decimal" style="width:90px"></div></div>';
@@ -139,7 +146,7 @@ function week(){
  return h+'<div class="card"><b>> SUMMARY</b><div class="tip" style="margin-top:6px">7-day average: '+Math.round(tot/7)+'%'+(function(){var t=0,n=0;for(var i=0;i<7;i++){var d=new Date();d.setDate(d.getDate()-i);var v=(S.days[key(d)]||{}).sl;if(v>0){t+=v;n++}}return n?'<br>Average sleep: '+(t/n).toFixed(1)+'h ('+n+' nights logged)':''})()+'<br>Streak of days at 70% or more: '+run+'</div></div>'}
 function edit(){
  var h='<h1>Routine settings</h1><p class="tip">Change times, names or switch blocks off. Times before 06:00 count as after midnight.</p><div class="card"><span class="tip">Water target (ml)</span><input type="number" id="wt" value="'+S.wt+'" inputmode="numeric"></div><div class="card"><b>Shift the whole day</b><div class="tip">Moves every time earlier or later. Use it to move your sleep 15 minutes at a time.</div><button data-sh="-15">15 min earlier</button> <button data-sh="15">15 min later</button></div>';
- list().forEach(function(b){h+='<div class="card"><div class="row"><input type="checkbox" data-on="'+b.id+'"'+(b.on!==false?' checked':'')+'><input type="time" data-t="'+b.id+'" value="'+esc(b.t)+'" style="width:120px"><select data-d="'+b.id+'" style="width:110px"><option value="all"'+(!b.d?" selected":"")+'>Every day</option><option value="wk"'+(b.d==="wk"?" selected":"")+'>Mon-Fri</option><option value="we"'+(b.d==="we"?" selected":"")+'>Sat-Sun</option><option value="d1"'+(b.d==="d1"?" selected":"")+'>Mon only</option><option value="d0"'+(b.d==="d0"?" selected":"")+'>Sun only</option><option value="days:1,3,5,0"'+(b.d==="days:1,3,5,0"?" selected":"")+'>Mon/Wed/Fri/Sun</option><option value="days:0,3"'+(b.d==="days:0,3"?" selected":"")+'>Wed/Sun</option><option value="m1"'+(b.d==="m1"?" selected":"")+'>Monthly (1st)</option></select><button data-x="'+b.id+'">[delete]</button></div><input type="text" data-n="'+b.id+'" value="'+esc(b.n)+'" style="margin-top:6px"></div>'});
+ list().forEach(function(b){h+='<div class="card"><div class="row"><input type="checkbox" data-on="'+b.id+'"'+(b.on!==false?' checked':'')+'><input type="time" data-t="'+b.id+'" value="'+esc(b.t)+'" style="width:120px"><select data-d="'+b.id+'" style="width:110px"><option value="all"'+(!b.d?" selected":"")+'>Every day</option><option value="wk"'+(b.d==="wk"?" selected":"")+'>Mon-Fri</option><option value="we"'+(b.d==="we"?" selected":"")+'>Sat-Sun</option><option value="d1"'+(b.d==="d1"?" selected":"")+'>Mon only</option><option value="d0"'+(b.d==="d0"?" selected":"")+'>Sun only</option><option value="days:1,3,5,0"'+(b.d==="days:1,3,5,0"?" selected":"")+'>Mon/Wed/Fri/Sun</option><option value="days:2,4,6"'+(b.d==="days:2,4,6"?" selected":"")+'>Tue/Thu/Sat</option><option value="days:0,3"'+(b.d==="days:0,3"?" selected":"")+'>Wed/Sun</option><option value="m1"'+(b.d==="m1"?" selected":"")+'>Monthly (1st)</option></select><button data-x="'+b.id+'">[delete]</button></div><input type="text" data-n="'+b.id+'" value="'+esc(b.n)+'" style="margin-top:6px"></div>'});
  return h+'<button id="add">Add routine block</button> <button id="rs" class="tip">Reset routine</button><div class="card backup-card"><b>Back up your data</b><p class="tip">All three sections are stored in this browser. Export a combined backup before changing devices or restoring data.</p><button data-all="export">Download full backup</button> <button data-all="import">Restore full backup</button><input id="backupFile" type="file" accept="application/json" hidden></div>'}
 function render(){var y=window.scrollY;document.getElementById("app").innerHTML=tab===1?today():tab===2?week():edit();window.scrollTo(0,y);bind();updateXPBadge()}
 function bind(){var q=function(s){return document.querySelectorAll(s)};
