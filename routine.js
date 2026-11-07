@@ -22,15 +22,14 @@ var DEF=[
 {id:26,t:"14:30",n:"Mouthwash if using: follow label; keep separate from brushing",c:"free"},
 {id:10,t:"15:00",n:"Study / focused work block 2",c:"study"},
 {id:11,t:"16:30",n:"Drink water and take a short movement break",c:"water",ml:250},
-{id:13,t:"18:00",n:"Strength workout on planned training days; otherwise light activity",c:"move",d:"wk",ml:250},
+{id:13,t:"18:00",n:"Workout block: Lift Upper/Lower session (60 min)",c:"move",d:"days:1,2,4,5",ml:250},
 {id:15,t:"19:00",n:"Post-workout protein if needed to meet daily protein target",c:"eat"},
 {id:16,t:"19:30",n:"Dinner",c:"eat"},
 {id:40,t:"20:00",n:"Five-minute room reset: clothes away, surfaces clear, rubbish checked",c:"clean"},
 {id:41,t:"20:10",n:"Wash dishes and wipe kitchen worktops after eating",c:"clean"},
+{id:63,t:"20:30",n:"Free time: gaming, relax or enjoy a hobby (up to 60 min)",c:"free"},
 {id:18,t:"21:00",n:"Water; prepare tomorrow's clothes and any food that needs defrosting",c:"water",ml:200},
-{id:19,t:"22:00",n:"Floss / clean between teeth with interdental brushes",c:"free"},
 {id:27,t:"22:10",n:"Brush teeth for 2 minutes with fluoride toothpaste; spit, don't rinse",c:"free"},
-{id:62,t:"22:05",n:"Gently scrape your tongue once daily",c:"free"},
 {id:28,t:"22:25",n:"Wash face and apply moisturiser; lip balm if needed",c:"free",detail:["Wash your hands, then wet your face with lukewarm water.","Use one pump of gentle face wash on wet hands and rub your hands together to make a lather.","With your fingertips, massage gently over your chin, forehead and cheeks in slow circles for about 10–20 seconds. Do not scrub.","Rinse all cleanser away with lukewarm water, then pat your face dry with a clean towel.","Gently spread a pea-sized amount of moisturiser over your cheeks, chin and forehead.","Apply lip balm if you want to."]},
 {id:29,t:"22:40",n:"Prepare tomorrow: check schedule, tidy bedside and set alarm",c:"free"},
 {id:20,t:"23:00",n:"Wind down: dim lights, reduce screens and relax",c:"sleep"},
@@ -80,11 +79,16 @@ if(routineVersion<15){
   if(/\bhair[\s-]*wash(?:ing)?\b|\bwash(?:ing)?\b.*\bhair\b|\bshampoo\b/i.test(label))item.d="days:0,3";
  });
 }
+if(routineVersion<16){
+ S.r=S.r.filter(function(item){return !(item.id===19&&item.n==="Floss / clean between teeth with interdental brushes")&&!(item.id===62&&item.n==="Gently scrape your tongue once daily")});
+ S.r.forEach(function(item){var label=String(item.n||"");if(item.id===13||(/workout|strength training/i.test(label)&&item.c==="move"))item.d="days:1,2,4,5"});
+ if(!S.r.some(function(item){return /gaming|game time|free time|leisure/i.test(String(item.n||""))})){var freeTime=JSON.parse(JSON.stringify(DEF.filter(function(item){return item.id===63})[0]));if(S.r.some(function(item){return item.id===freeTime.id})){freeTime.id=S.r.reduce(function(max,item){return Math.max(max,+item.id||0)},0)+1}S.r.push(freeTime)}
+}
 if(!Number.isFinite(+S.wt)||S.wt<1)S.wt=2000;
 if(!S.xp||typeof S.xp!=="object")S.xp={total:0,days:{}};
 if(!Number.isFinite(+S.xp.total)||S.xp.total<0)S.xp.total=0;else S.xp.total=+S.xp.total;
 if(!S.xp.days||typeof S.xp.days!=="object")S.xp.days={};
-S.v=15;
+S.v=16;
 function save(){try{localStorage.setItem("rt1",JSON.stringify(S))}catch(e){alert("RoutineHub could not save your change. Browser storage may be full or disabled.")}}
 save();
 function key(d){d=d||new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
@@ -146,7 +150,7 @@ function week(){
  return h+'<div class="card"><b>> SUMMARY</b><div class="tip" style="margin-top:6px">7-day average: '+Math.round(tot/7)+'%'+(function(){var t=0,n=0;for(var i=0;i<7;i++){var d=new Date();d.setDate(d.getDate()-i);var v=(S.days[key(d)]||{}).sl;if(v>0){t+=v;n++}}return n?'<br>Average sleep: '+(t/n).toFixed(1)+'h ('+n+' nights logged)':''})()+'<br>Streak of days at 70% or more: '+run+'</div></div>'}
 function edit(){
  var h='<h1>Routine settings</h1><p class="tip">Change times, names or switch blocks off. Times before 06:00 count as after midnight.</p><div class="card"><span class="tip">Water target (ml)</span><input type="number" id="wt" value="'+S.wt+'" inputmode="numeric"></div><div class="card"><b>Shift the whole day</b><div class="tip">Moves every time earlier or later. Use it to move your sleep 15 minutes at a time.</div><button data-sh="-15">15 min earlier</button> <button data-sh="15">15 min later</button></div>';
- list().forEach(function(b){h+='<div class="card"><div class="row"><input type="checkbox" data-on="'+b.id+'"'+(b.on!==false?' checked':'')+'><input type="time" data-t="'+b.id+'" value="'+esc(b.t)+'" style="width:120px"><select data-d="'+b.id+'" style="width:110px"><option value="all"'+(!b.d?" selected":"")+'>Every day</option><option value="wk"'+(b.d==="wk"?" selected":"")+'>Mon-Fri</option><option value="we"'+(b.d==="we"?" selected":"")+'>Sat-Sun</option><option value="d1"'+(b.d==="d1"?" selected":"")+'>Mon only</option><option value="d0"'+(b.d==="d0"?" selected":"")+'>Sun only</option><option value="days:1,3,5,0"'+(b.d==="days:1,3,5,0"?" selected":"")+'>Mon/Wed/Fri/Sun</option><option value="days:2,4,6"'+(b.d==="days:2,4,6"?" selected":"")+'>Tue/Thu/Sat</option><option value="days:0,3"'+(b.d==="days:0,3"?" selected":"")+'>Wed/Sun</option><option value="m1"'+(b.d==="m1"?" selected":"")+'>Monthly (1st)</option></select><button data-x="'+b.id+'">[delete]</button></div><input type="text" data-n="'+b.id+'" value="'+esc(b.n)+'" style="margin-top:6px"></div>'});
+ list().forEach(function(b){h+='<div class="card"><div class="row"><input type="checkbox" data-on="'+b.id+'"'+(b.on!==false?' checked':'')+'><input type="time" data-t="'+b.id+'" value="'+esc(b.t)+'" style="width:120px"><select data-d="'+b.id+'" style="width:110px"><option value="all"'+(!b.d?" selected":"")+'>Every day</option><option value="wk"'+(b.d==="wk"?" selected":"")+'>Mon-Fri</option><option value="we"'+(b.d==="we"?" selected":"")+'>Sat-Sun</option><option value="d1"'+(b.d==="d1"?" selected":"")+'>Mon only</option><option value="d0"'+(b.d==="d0"?" selected":"")+'>Sun only</option><option value="days:1,3,5,0"'+(b.d==="days:1,3,5,0"?" selected":"")+'>Mon/Wed/Fri/Sun</option><option value="days:2,4,6"'+(b.d==="days:2,4,6"?" selected":"")+'>Tue/Thu/Sat</option><option value="days:1,2,4,5"'+(b.d==="days:1,2,4,5"?" selected":"")+'>Mon/Tue/Thu/Fri</option><option value="days:0,3"'+(b.d==="days:0,3"?" selected":"")+'>Wed/Sun</option><option value="m1"'+(b.d==="m1"?" selected":"")+'>Monthly (1st)</option></select><button data-x="'+b.id+'">[delete]</button></div><input type="text" data-n="'+b.id+'" value="'+esc(b.n)+'" style="margin-top:6px"></div>'});
  return h+'<button id="add">Add routine block</button> <button id="rs" class="tip">Reset routine</button><div class="card backup-card"><b>Back up your data</b><p class="tip">All three sections are stored in this browser. Export a combined backup before changing devices or restoring data.</p><button data-all="export">Download full backup</button> <button data-all="import">Restore full backup</button><input id="backupFile" type="file" accept="application/json" hidden></div>'}
 function render(){var y=window.scrollY;document.getElementById("app").innerHTML=tab===1?today():tab===2?week():edit();window.scrollTo(0,y);bind();updateXPBadge()}
 function bind(){var q=function(s){return document.querySelectorAll(s)};
