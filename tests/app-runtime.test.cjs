@@ -225,10 +225,18 @@ test("skincare guidance expands under the morning and evening routine items", ()
   assert(evening.detail.some((step) => /pea-sized amount of moisturiser/.test(step)));
   assert(evening.detail.some((step) => /lip balm if you want/.test(step)));
 
-  const custom = { r: [{ id: 30, t: "09:15", n: "My own face routine", c: "free" }], days: {}, wt: 1800, v: 11 };
+  const custom = { r: [
+    { id: 30, t: "09:15", n: "Morning face care: gently cleanse, pat dry and moisturise", c: "free" },
+    { id: 28, t: "21:30", n: "Evening face care: cleanse gently and apply moisturiser", c: "free" },
+  ], days: { "2025-01-01": { d: { 30: 1 }, w: 0 } }, wt: 1800, v: 12 };
   const migrated = runScript(read("routine.js"), "routine.js#custom-skincare", { storage: localStorage({ rt1: JSON.stringify(custom) }) });
-  assert.equal(migrated.context.S.r[0].n, "My own face routine", "migration preserves a customized routine label");
-  assert.equal(migrated.context.S.r[0].detail, undefined, "migration does not add default instructions to a customized item");
+  assert.equal(migrated.context.S.r[0].n, custom.r[0].n, "migration preserves a customized morning label");
+  assert.equal(migrated.context.S.r[1].n, custom.r[1].n, "migration preserves a customized evening label");
+  assert.equal(migrated.context.S.r[0].t, "09:15", "migration preserves customized times");
+  assert(migrated.context.S.r[0].detail.length > 0, "existing customized face-care tasks receive the steps");
+  assert(migrated.context.S.r[1].detail.length > 0, "existing customized evening face-care task receives the steps");
+  assert.equal(migrated.context.S.days["2025-01-01"].d[30], 1, "migration preserves completion history");
+  assert.match(migrated.dom.document.getElementById("app").innerHTML, /Show skincare steps/);
 });
 
 test("Meals and Lift retain their own stores and notify only the parent app of earned actions", () => {

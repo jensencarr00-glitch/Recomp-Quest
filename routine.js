@@ -62,11 +62,14 @@ if(routineVersion<11){
 if(routineVersion<12){
  [[30,"Face: gentle cleanser, moisturiser and SPF 30–50"],[28,"Wash face and apply moisturiser; lip balm if needed"]].forEach(function(pair){var item=S.r.filter(function(b){return b.id===pair[0]})[0],seed=DEF.filter(function(b){return b.id===pair[0]})[0];if(item&&item.n===pair[1]&&!Array.isArray(item.detail)&&seed)item.detail=JSON.parse(JSON.stringify(seed.detail))});
 }
+if(routineVersion<13){
+ [[30,/face|skin/i],[28,/face|skin/i]].forEach(function(pair){var item=S.r.filter(function(b){return b.id===pair[0]})[0],seed=DEF.filter(function(b){return b.id===pair[0]})[0];if(item&&!Array.isArray(item.detail)&&seed&&pair[1].test(item.n))item.detail=JSON.parse(JSON.stringify(seed.detail))});
+}
 if(!Number.isFinite(+S.wt)||S.wt<1)S.wt=2000;
 if(!S.xp||typeof S.xp!=="object")S.xp={total:0,days:{}};
 if(!Number.isFinite(+S.xp.total)||S.xp.total<0)S.xp.total=0;else S.xp.total=+S.xp.total;
 if(!S.xp.days||typeof S.xp.days!=="object")S.xp.days={};
-S.v=12;
+S.v=13;
 function save(){try{localStorage.setItem("rt1",JSON.stringify(S))}catch(e){alert("RoutineHub could not save your change. Browser storage may be full or disabled.")}}
 save();
 function key(d){d=d||new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
@@ -118,7 +121,7 @@ function today(){
  h+='<div class="card"><b>Routine progress</b><div class="tip" style="margin-top:6px">'+bar(p,20)+' '+p+'%</div></div>';
  var sp=slp();if(sp)h+='<div class="card"><b>> SLEEP</b><div class="tip" style="margin-top:6px">Lights out '+sp.bed+', wake '+sp.wake+', plan '+sp.h.toFixed(1)+' hours</div><div class="row" style="margin-top:6px"><span class="tip">Last night (hours)</span><input type="number" step="0.5" id="sl" value="'+(dd.sl||"")+'" inputmode="decimal" style="width:90px"></div></div>';
  h+='<div class="card"><b>Water</b><div class="tip" style="margin-top:6px">'+bar(wp,20)+' '+dd.w+' / '+S.wt+' ml</div><div class="w"><button data-w="250">+250 ml</button><button data-w="100">+100 ml</button><button data-w="-250">−250 ml</button></div></div>';
- L.forEach(function(b,i){h+='<div class="card'+(dd.d[b.id]?' done':'')+(i===nx?' next':'')+'"><div class="row"><input type="checkbox" data-b="'+b.id+'"'+(dd.d[b.id]?' checked':'')+'><span class="t">'+esc(b.t)+'</span><span style="flex:1">'+esc(b.n)+'</span><span class="tip">'+(b.ml?"+"+b.ml+"ml ":"")+(IC[b.c]||"")+'</span></div>'+(Array.isArray(b.detail)&&b.detail.length?'<details class="routine-detail"><summary>View steps</summary><ol>'+b.detail.map(function(step){return'<li>'+esc(step)+'</li>'}).join('')+'</ol></details>':'')+(i===nx?'<div class="tip rd" style="margin-top:4px">&gt; next up</div>':'')+'</div>'});
+ L.forEach(function(b,i){h+='<div class="card'+(dd.d[b.id]?' done':'')+(i===nx?' next':'')+'"><div class="row"><input type="checkbox" data-b="'+b.id+'"'+(dd.d[b.id]?' checked':'')+'><span class="t">'+esc(b.t)+'</span><span style="flex:1">'+esc(b.n)+'</span><span class="tip">'+(b.ml?"+"+b.ml+"ml ":"")+(IC[b.c]||"")+'</span></div>'+(Array.isArray(b.detail)&&b.detail.length?'<details class="routine-detail"><summary>Show skincare steps</summary><ol>'+b.detail.map(function(step){return'<li>'+esc(step)+'</li>'}).join('')+'</ol></details>':'')+(i===nx?'<div class="tip rd" style="margin-top:4px">&gt; next up</div>':'')+'</div>'});
  return h}
 function week(){
  var h='<div class="page-intro"><p class="eyebrow">YOUR LAST SEVEN DAYS</p><h1>This week</h1></div>',tot=0,st=0,run=0,nm=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
