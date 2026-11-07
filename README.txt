@@ -1,12 +1,13 @@
-RoutineHub – Daily Life
+RoutineHub – Complete Life Hub
 
-Updated version with a more detailed personal hygiene, evening routine, weekly home-cleaning rota and monthly deep-clean schedule.
+Sections:
+- Today / Week / Edit: hygiene, sleep, cleaning and daily schedule
+- Meals: meal planning and nutrition tools
+- Lift: full strength training app with workout plans, exercise tracking, rest timer, history, settings and backup import/export
 
-Sleep target: lights out at 00:00, wake at 08:00.
+Install:
+Upload the CONTENTS of this folder to the ROOT of your GitHub Pages repository, preserving the meals/ and lift/ folders.
+Enable GitHub Pages from main / root.
+Open the root site on your phone and install RoutineHub.
 
-To publish: upload the contents of this folder to the root of your GitHub Pages repository, replacing the existing files. Keep index.html, manifest.json, sw.js and both icon files together.
-
-The app saves check-offs and settings in the browser on your device. On first launch after this update, the suggested routine is refreshed; your previous daily history and water logs are retained.
-
-
-Personal care schedule: showers Monday, Wednesday, Friday and Sunday; hair wash Wednesday and Sunday. On Tuesday, Thursday and Saturday, the morning routine includes a quick wash instead of a full shower.
+The Lift section is the original uploaded Lift app, kept intact in /lift, with a return link to RoutineHub. Its data remains in browser storage on the same origin.
