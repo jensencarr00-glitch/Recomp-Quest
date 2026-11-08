@@ -258,6 +258,31 @@ test("skincare guidance expands under the morning and evening routine items", ()
   assert.equal(migratedLegacy.context.S.days["2025-01-02"].d[701], 1);
 });
 
+test("repairs misplaced skincare steps and restores the morning grooming time", () => {
+  const skinSteps = [
+    "Wash your hands, then wet your face with lukewarm water.",
+    "Use one pump of gentle face wash on wet hands.",
+    "Rinse all cleanser away with lukewarm water, then pat your face dry.",
+    "Gently spread a pea-sized amount of moisturiser over your cheeks, chin and forehead.",
+  ];
+  const saved = { r: [
+    { id: 40, t: "20:00", n: "10-minute room reset: put clothes in laundry, clear surfaces and put items away", c: "free", detail: skinSteps },
+    { id: 37, t: "08:45", n: "Comb/style hair and check nails, beard and general grooming", c: "free", detail: skinSteps },
+    { id: 57, t: "12:00", n: "Personal upkeep: trim/file nails, clean trimmer heads and wipe grooming tools", c: "free", d: "d0", detail: skinSteps },
+    { id: 30, t: "08:30", n: "Morning face care: gently cleanse, pat dry and moisturise", c: "free", detail: skinSteps },
+  ], days: { "2026-11-08": { d: { 40: 1, 37: 1, 57: 1 }, w: 750 } }, wt: 2000, v: 18 };
+  const { context } = runScript(read("routine.js"), "routine.js#repair-skincare-placement", { storage: localStorage({ rt1: JSON.stringify(saved) }) });
+  const routine = context.S.r;
+  assert.equal(routine.find((item) => item.id === 40).detail, undefined, "room-reset items no longer inherit face-care instructions");
+  assert.equal(routine.find((item) => item.id === 37).detail, undefined, "grooming items no longer inherit face-care instructions");
+  assert.equal(routine.find((item) => item.id === 37).t, "08:55", "morning grooming follows shower and skincare");
+  assert.equal(routine.find((item) => item.id === 57).t, "12:00", "the weekly personal-upkeep task stays scheduled at noon");
+  assert.equal(routine.find((item) => item.id === 57).detail, undefined);
+  assert(routine.find((item) => item.id === 30).detail.length > 0, "face-care instructions remain with the face-care task");
+  assert.equal(context.S.days["2026-11-08"].d[37], 1, "routine completion history is preserved");
+  assert.equal(context.S.days["2026-11-08"].w, 750, "water history is preserved");
+});
+
 test("shower and hair-wash days migrate into the shower item and follow the local calendar", () => {
   const saved = { r: [
     { id: 801, t: "08:25", n: "Shower: wash and dry thoroughly", c: "free" },

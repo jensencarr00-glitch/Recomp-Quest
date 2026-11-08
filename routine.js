@@ -103,11 +103,31 @@ if(routineVersion<17){
  if(morningFace&&Array.isArray(morningFace.detail)&&morningFace.detail[0]==="Wash your hands, then wet your face with lukewarm water.")morningFace.detail[0]="After your shower or quick wash, wash your hands and wet your face with lukewarm water.";
  [[19,/floss|interdental|between.*teeth/i],[62,/tongue/i]].forEach(function(pair){if(!S.r.some(function(item){return pair[1].test(String(item.n||""))})){var seed=DEF.filter(function(item){return item.id===pair[0]})[0];if(seed){var copy=JSON.parse(JSON.stringify(seed));if(S.r.some(function(item){return item.id===copy.id}))copy.id=S.r.reduce(function(max,item){return Math.max(max,+item.id||0)},0)+1;S.r.push(copy)}}});
 }
+if(routineVersion<18){
+ var isFaceTask=function(label){return /morning face care|evening face care|face care|face:\s*gentle|wash face|facial skincare|skin care|skincare/i.test(label)};
+ var hasFaceSteps=function(steps){return Array.isArray(steps)&&steps.some(function(step){return /face wash|lukewarm water|moisturiser over your cheeks|sunscreen as the last morning/i.test(String(step))})};
+ S.r.forEach(function(item){var label=String(item.n||""),hour=parseInt(String(item.t||"00:00").slice(0,2),10)||0,face=isFaceTask(label);
+  if(hasFaceSteps(item.detail)&&!face)delete item.detail;
+  if(face&&!Array.isArray(item.detail)){var evening=/evening|night/i.test(label)||hour>=15;item.detail=JSON.parse(JSON.stringify(evening?skinTemplates.evening:skinTemplates.morning))}
+  if(/comb[\/ ]+style hair|style hair|comb hair/i.test(label)&&hour<12)item.t="08:55";
+  if(face&&hour<12)item.t="08:45";
+ });
+}
+if(routineVersion<19){
+ var isFaceTaskV19=function(label){return /morning face care|evening face care|face care|face:\s*gentle|wash face|facial skincare|skin care|skincare/i.test(label)};
+ var hasFaceStepsV19=function(steps){return Array.isArray(steps)&&steps.some(function(step){return /face wash|lukewarm water|moisturiser over your cheeks|sunscreen as the last morning|cleanser away with lukewarm water/i.test(String(step))})};
+ S.r.forEach(function(item){var label=String(item.n||""),hour=parseInt(String(item.t||"00:00").slice(0,2),10)||0,face=isFaceTaskV19(label);
+  if(hasFaceStepsV19(item.detail)&&!face)delete item.detail;
+  if(face&&!Array.isArray(item.detail)){var evening=/evening|night/i.test(label)||hour>=15;item.detail=JSON.parse(JSON.stringify(evening?skinTemplates.evening:skinTemplates.morning))}
+  if(/comb[\/ ]+style hair|style hair|comb hair/i.test(label))item.t="08:55";
+  if(face&&hour<12)item.t="08:45";
+ });
+}
 if(!Number.isFinite(+S.wt)||S.wt<1)S.wt=2000;
 if(!S.xp||typeof S.xp!=="object")S.xp={total:0,days:{}};
 if(!Number.isFinite(+S.xp.total)||S.xp.total<0)S.xp.total=0;else S.xp.total=+S.xp.total;
 if(!S.xp.days||typeof S.xp.days!=="object")S.xp.days={};
-S.v=17;
+S.v=19;
 function save(){try{localStorage.setItem("rt1",JSON.stringify(S))}catch(e){alert("RoutineHub could not save your change. Browser storage may be full or disabled.")}}
 save();
 function key(d){d=d||new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
