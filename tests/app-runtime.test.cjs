@@ -140,7 +140,8 @@ test("RoutineHub XP, ranks, quests, route navigation and old customizations work
   assert.match(dom.document.getElementById("app").innerHTML, /My saved walk/);
   assert.equal(JSON.parse(storage.getItem("rt1")).r[0].n, "My saved walk");
   assert.equal(JSON.parse(storage.getItem("rt1")).wt, 1800);
-  assert.equal(context.S.r.some((item) => item.id === 19 || item.id === 62), false, "oral-care entries already present in the user's routine are not duplicated");
+  assert.equal(context.S.r.filter((item) => /floss|interdental/i.test(item.n)).length, 1, "one floss reminder is present");
+  assert.equal(context.S.r.filter((item) => /tongue/i.test(item.n)).length, 1, "one tongue-cleaning reminder is present");
   assert.equal(storage.getItem("mp4"), "preserve-meals");
   assert.equal(storage.getItem("lift_redesign_v1"), "preserve-lift");
 
@@ -200,14 +201,26 @@ test("RoutineHub XP, ranks, quests, route navigation and old customizations work
   assert.match(dom.document.getElementById("app").innerHTML, /Today/);
 });
 
-test("oral-care defaults retain twice-daily brushing and optional mouthwash without duplicate reminders", () => {
+test("oral-care defaults sequence floss before brushing and keep mouthwash separate", () => {
   const { context } = runScript(read("routine.js"), "routine.js#new-user");
   const routine = context.S.r;
   assert.equal(routine.filter((item) => /Brush teeth for 2 minutes with fluoride toothpaste/.test(item.n)).length, 2, "brushing is scheduled twice daily");
-  assert.equal(routine.filter((item) => /Floss \/ clean between teeth with interdental brushes/.test(item.n)).length, 0);
-  assert.equal(routine.filter((item) => /scrape your tongue once daily/.test(item.n)).length, 0);
+  assert.equal(routine.find((item) => item.id === 31).t, "08:15");
+  assert.equal(routine.find((item) => item.id === 32).t, "08:20");
+  assert.equal(routine.find((item) => item.id === 34).t, "08:35");
+  assert.equal(routine.find((item) => item.id === 35).t, "08:40");
+  assert.equal(routine.find((item) => item.id === 30).t, "08:45", "facial skincare follows the shower and drying steps");
+  assert.deepEqual(JSON.parse(JSON.stringify(routine.find((item) => item.id === 32).dayNotes)), {
+    3: "Hair wash today: shampoo your scalp and rinse; condition the lengths/ends as suited to your hair type, then rinse.",
+    0: "Hair wash today: shampoo your scalp and rinse; condition the lengths/ends as suited to your hair type, then rinse.",
+  });
+  assert.equal(routine.filter((item) => /floss or clean between teeth/i.test(item.n)).length, 1);
+  assert.equal(routine.filter((item) => /clean tongue with scraper/i.test(item.n)).length, 1);
+  assert.equal(routine.find((item) => item.id === 19).t, "23:30");
+  assert.equal(routine.find((item) => item.id === 62).t, "23:35");
+  assert.equal(routine.find((item) => item.id === 27).t, "23:40");
+  assert.equal(routine.find((item) => item.id === 26).t, "14:30", "optional mouthwash stays after lunch, away from brushing");
   assert.match(routine.find((item) => item.id === 26).n, /if using/);
-  assert.equal(routine.some((item) => item.id === 19 || item.id === 62), false, "duplicate oral-care items are not seeded");
 });
 
 test("skincare guidance expands under the morning and evening routine items", () => {
@@ -229,7 +242,7 @@ test("skincare guidance expands under the morning and evening routine items", ()
   const migrated = runScript(read("routine.js"), "routine.js#custom-skincare", { storage: localStorage({ rt1: JSON.stringify(custom) }) });
   assert.equal(migrated.context.S.r[0].n, custom.r[0].n, "migration preserves a customized morning label");
   assert.equal(migrated.context.S.r[1].n, custom.r[1].n, "migration preserves a customized evening label");
-  assert.equal(migrated.context.S.r[0].t, "09:15", "migration preserves customized times");
+  assert.equal(migrated.context.S.r[0].t, "08:45", "morning face care moves after shower while preserving the task");
   assert(migrated.context.S.r[0].detail.length > 0, "existing customized face-care tasks receive the steps");
   assert(migrated.context.S.r[1].detail.length > 0, "existing customized evening face-care task receives the steps");
   assert.equal(migrated.context.S.days["2025-01-01"].d[30], 1, "migration preserves completion history");
@@ -245,17 +258,21 @@ test("skincare guidance expands under the morning and evening routine items", ()
   assert.equal(migratedLegacy.context.S.days["2025-01-02"].d[701], 1);
 });
 
-test("shower and hair-wash days migrate onto saved routines and follow the local calendar", () => {
+test("shower and hair-wash days migrate into the shower item and follow the local calendar", () => {
   const saved = { r: [
     { id: 801, t: "08:25", n: "Shower: wash and dry thoroughly", c: "free" },
     { id: 802, t: "08:25", n: "Non-shower day: wash with a clean flannel", c: "free" },
     { id: 803, t: "08:50", n: "Hair washing: shampoo and condition", c: "free" },
   ], days: { "2025-03-03": { d: { 801: 1 }, w: 500 } }, wt: 2000, v: 14 };
   const { context, dom } = runScript(read("routine.js"), "routine.js#weekly-hygiene", { storage: localStorage({ rt1: JSON.stringify(saved) }) });
-  const [shower, nonShower, hair] = context.S.r;
+  const shower = context.S.r.find((item) => item.id === 801);
+  const nonShower = context.S.r.find((item) => item.id === 802);
   assert.equal(shower.d, "days:1,3,5,0");
   assert.equal(nonShower.d, "days:2,4,6");
-  assert.equal(hair.d, "days:0,3");
+  assert.equal(context.S.r.some((item) => item.id === 803), false, "separate hair-wash reminder is merged into the shower task");
+  assert.match(context.routineDayNote(shower, "2026-11-11"), /Hair wash today/);
+  assert.match(context.routineDayNote(shower, "2026-11-15"), /Hair wash today/);
+  assert.equal(context.routineDayNote(shower, "2026-11-09"), "", "the shower task only calls out hair washing on Wednesday and Sunday");
   for (const [date, shouldShower, shouldHair] of [
     ["2026-11-09", true, false], ["2026-11-10", false, false],
     ["2026-11-11", true, true], ["2026-11-12", false, false],
@@ -263,12 +280,12 @@ test("shower and hair-wash days migrate onto saved routines and follow the local
     ["2026-11-15", true, true],
   ]) {
     assert.equal(context.app(shower, date), shouldShower, `shower schedule for ${date}`);
-    assert.equal(context.app(hair, date), shouldHair, `hair-wash schedule for ${date}`);
+    assert.equal(!!context.routineDayNote(shower, date), shouldHair, `hair-wash note for ${date}`);
   }
   assert.equal(context.app(nonShower, "2026-11-10"), true);
   assert.equal(context.app(nonShower, "2026-11-13"), false);
   assert.equal(context.S.r[0].n, saved.r[0].n, "schedule migration preserves task names");
-  assert.equal(context.S.r[0].t, saved.r[0].t, "schedule migration preserves task times");
+  assert.equal(context.S.r[0].t, "08:20", "shower is moved before the post-shower skincare sequence");
   assert.equal(context.S.days["2025-03-03"].d[801], 1, "schedule migration preserves completion history");
   assert.match(dom.document.getElementById("app").innerHTML, /YOUR LOCAL DAY/);
 
@@ -299,6 +316,26 @@ test("removes only duplicate oral-care reminders and adds workout and gaming tim
   assert.equal(context.app(workout, "2026-11-11"), false, "no workout reminder appears on Wednesday recovery");
   assert.equal(context.app(workout, "2026-11-12"), true, "the Thursday workout appears");
   assert.match(dom.document.getElementById("app").innerHTML, /Free time: gaming, relax or enjoy a hobby/);
+});
+
+test("sleep quest has a visible logger that saves hours and awards XP", () => {
+  const { context, dom } = runScript(read("routine.js"), "routine.js#sleep-log");
+  let html = dom.document.getElementById("app").innerHTML;
+  assert.match(html, /LOG LAST NIGHT&#39;S SLEEP/);
+  assert.match(html, /id="save-sleep"/);
+  assert.match(html, /type="number" id="sl"/);
+  const input = dom.document.getElementById("sl");
+  const save = dom.document.getElementById("save-sleep");
+  input.value = "7.5";
+  save.click();
+  const today = new Date();
+  const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  assert.equal(context.S.days[key].sl, 7.5);
+  assert.equal(context.S.xp.total, 14, "sleep action XP and rest quest reward are paid once");
+  assert.equal(context.S.xp.days[key].quests.sleep, true);
+  html = dom.document.getElementById("app").innerHTML;
+  assert.match(html, /Update log/);
+  assert.match(html, /Logged/);
 });
 
 test("Meals and Lift retain their own stores and notify only the parent app of earned actions", () => {

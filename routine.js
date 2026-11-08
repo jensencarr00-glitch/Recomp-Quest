@@ -4,13 +4,12 @@ var DEF=[
 {id:1,t:"08:00",n:"Wake up, drink water, open curtains and get 10–20 minutes of daylight",c:"sleep",ml:250},
 {id:2,t:"08:05",n:"Use the toilet, wash hands and make your bed",c:"free"},
 {id:21,t:"08:10",n:"Weigh in (after toilet, before breakfast)",c:"free",d:"d1"},
-{id:30,t:"08:15",n:"Face: gentle cleanser, moisturiser and SPF 30–50",c:"free",detail:["Wash your hands, then wet your face with lukewarm water.","Use one pump of gentle face wash on wet hands and rub your hands together to make a lather.","With your fingertips, massage gently over your chin, forehead and cheeks in slow circles for about 10–20 seconds. Do not scrub.","Rinse all cleanser away with lukewarm water, then pat your face dry with a clean towel.","Gently spread a pea-sized amount of moisturiser over your cheeks, chin and forehead.","Finish with your SPF 30–50 sunscreen as the last morning skincare step; follow its label for application and reapplication."]},
-{id:31,t:"08:20",n:"Brush teeth for 2 minutes with fluoride toothpaste; spit, don't rinse",c:"free"},
-{id:32,t:"08:25",n:"Shower: wash underarms, external groin, bottom, feet and sweaty areas",c:"free",d:"days:1,3,5,0"},
-{id:33,t:"08:25",n:"Non-shower day: wash face, underarms, external groin and feet with a clean flannel",c:"free",d:"days:2,4,6"},
-{id:34,t:"08:40",n:"Dry thoroughly, especially feet and skin folds; put on clean underwear and socks",c:"free"},
-{id:35,t:"08:45",n:"Apply deodorant to clean, dry underarms; moisturise dry body areas",c:"free"},
-{id:36,t:"08:50",n:"Hair wash: shampoo scalp, rinse, condition mid-lengths and ends",c:"free",d:"days:0,3"},
+{id:30,t:"08:45",n:"Face: gentle cleanser, moisturiser and SPF 30–50",c:"free",detail:["After your shower or quick wash, wash your hands and wet your face with lukewarm water.","Use one pump of gentle face wash on wet hands and rub your hands together to make a lather.","With your fingertips, massage gently over your chin, forehead and cheeks in slow circles for about 10–20 seconds. Do not scrub.","Rinse all cleanser away with lukewarm water, then pat your face dry with a clean towel.","Gently spread a pea-sized amount of moisturiser over your cheeks, chin and forehead.","Finish with your SPF 30–50 sunscreen as the last morning skincare step; follow its label for application and reapplication."]},
+{id:31,t:"08:15",n:"Brush teeth for 2 minutes with fluoride toothpaste; spit, don't rinse",c:"free"},
+{id:32,t:"08:20",n:"Shower: wash underarms, external groin, bottom, feet and sweaty areas",c:"free",d:"days:1,3,5,0",dayNotes:{3:"Hair wash today: shampoo your scalp and rinse; condition the lengths/ends as suited to your hair type, then rinse.",0:"Hair wash today: shampoo your scalp and rinse; condition the lengths/ends as suited to your hair type, then rinse."}},
+{id:33,t:"08:20",n:"Non-shower day: wash face, underarms, external groin and feet with a clean flannel",c:"free",d:"days:2,4,6"},
+{id:34,t:"08:35",n:"Dry thoroughly, especially feet and skin folds; put on clean underwear and socks",c:"free"},
+{id:35,t:"08:40",n:"Apply deodorant to clean, dry underarms; moisturise dry body areas",c:"free"},
 {id:37,t:"08:55",n:"Comb/style hair and apply fragrance (start with 1–2 sprays)",c:"free"},
 {id:3,t:"09:00",n:"Breakfast and 5g creatine if this is part of your plan",c:"eat"},
 {id:4,t:"10:00",n:"Study / focused work block 1",c:"study"},
@@ -29,7 +28,9 @@ var DEF=[
 {id:41,t:"20:10",n:"Wash dishes and wipe kitchen worktops after eating",c:"clean"},
 {id:63,t:"20:30",n:"Free time: gaming, relax or enjoy a hobby (up to 60 min)",c:"free"},
 {id:18,t:"21:00",n:"Water; prepare tomorrow's clothes and any food that needs defrosting",c:"water",ml:200},
-{id:27,t:"22:10",n:"Brush teeth for 2 minutes with fluoride toothpaste; spit, don't rinse",c:"free"},
+{id:19,t:"23:30",n:"Floss or clean between teeth with interdental brushes",c:"free"},
+{id:62,t:"23:35",n:"Gently clean tongue with scraper; do not press hard",c:"free"},
+{id:27,t:"23:40",n:"Brush teeth for 2 minutes with fluoride toothpaste; spit, don't rinse",c:"free"},
 {id:28,t:"22:25",n:"Wash face and apply moisturiser; lip balm if needed",c:"free",detail:["Wash your hands, then wet your face with lukewarm water.","Use one pump of gentle face wash on wet hands and rub your hands together to make a lather.","With your fingertips, massage gently over your chin, forehead and cheeks in slow circles for about 10–20 seconds. Do not scrub.","Rinse all cleanser away with lukewarm water, then pat your face dry with a clean towel.","Gently spread a pea-sized amount of moisturiser over your cheeks, chin and forehead.","Apply lip balm if you want to."]},
 {id:29,t:"22:40",n:"Prepare tomorrow: check schedule, tidy bedside and set alarm",c:"free"},
 {id:20,t:"23:00",n:"Wind down: dim lights, reduce screens and relax",c:"sleep"},
@@ -84,11 +85,29 @@ if(routineVersion<16){
  S.r.forEach(function(item){var label=String(item.n||"");if(item.id===13||(/workout|strength training/i.test(label)&&item.c==="move"))item.d="days:1,2,4,5"});
  if(!S.r.some(function(item){return /gaming|game time|free time|leisure/i.test(String(item.n||""))})){var freeTime=JSON.parse(JSON.stringify(DEF.filter(function(item){return item.id===63})[0]));if(S.r.some(function(item){return item.id===freeTime.id})){freeTime.id=S.r.reduce(function(max,item){return Math.max(max,+item.id||0)},0)+1}S.r.push(freeTime)}
 }
+if(routineVersion<17){
+ S.r=S.r.filter(function(item){var label=String(item.n||"");if(item.id===19&&label==="Floss / clean between teeth with interdental brushes")return false;if(item.id===62&&label==="Gently scrape your tongue once daily")return false;return !(/hair[\s-]*wash|wash(?:ing)?\s+hair|shampoo/i.test(label)&&!/shower/i.test(label))});
+ var shower=S.r.filter(function(item){return /\bshower\b/i.test(String(item.n||""))&&!/non[\s-]?shower|no[\s-]?shower/i.test(String(item.n||""))})[0];
+ if(shower){shower.t="08:20";shower.d="days:1,3,5,0";shower.dayNotes={3:"Hair wash today: shampoo your scalp and rinse; condition the lengths/ends as suited to your hair type, then rinse.",0:"Hair wash today: shampoo your scalp and rinse; condition the lengths/ends as suited to your hair type, then rinse."}}
+ S.r.forEach(function(item){var label=String(item.n||""),hour=parseInt(String(item.t||"00:00").slice(0,2),10)||0;
+  if(/non[\s-]?shower|no[\s-]?shower/i.test(label)){item.t="08:20";item.d="days:2,4,6"}
+  if(item.id===31||(/^brush teeth/i.test(label)&&hour<12))item.t="08:15";
+  if(item.id===30||(/\bface\b|\bfacial\b|skin[\s-]?care/i.test(label)&&hour<12))item.t="08:45";
+  if(item.id===34)item.t="08:35";
+  if(item.id===35)item.t="08:40";
+  if(/floss|interdental/i.test(label))item.t="23:30";
+  if(/tongue.*(scrap|clean)|(?:scrap|clean).*tongue/i.test(label))item.t="23:35";
+  if(item.id===27||(/^brush teeth/i.test(label)&&hour>=12))item.t="23:40";
+ });
+ var morningFace=S.r.filter(function(item){return item.id===30||(/\bface\b|\bfacial\b/i.test(String(item.n||""))&&(parseInt(String(item.t||"00:00").slice(0,2),10)||0)<12)})[0];
+ if(morningFace&&Array.isArray(morningFace.detail)&&morningFace.detail[0]==="Wash your hands, then wet your face with lukewarm water.")morningFace.detail[0]="After your shower or quick wash, wash your hands and wet your face with lukewarm water.";
+ [[19,/floss|interdental|between.*teeth/i],[62,/tongue/i]].forEach(function(pair){if(!S.r.some(function(item){return pair[1].test(String(item.n||""))})){var seed=DEF.filter(function(item){return item.id===pair[0]})[0];if(seed){var copy=JSON.parse(JSON.stringify(seed));if(S.r.some(function(item){return item.id===copy.id}))copy.id=S.r.reduce(function(max,item){return Math.max(max,+item.id||0)},0)+1;S.r.push(copy)}}});
+}
 if(!Number.isFinite(+S.wt)||S.wt<1)S.wt=2000;
 if(!S.xp||typeof S.xp!=="object")S.xp={total:0,days:{}};
 if(!Number.isFinite(+S.xp.total)||S.xp.total<0)S.xp.total=0;else S.xp.total=+S.xp.total;
 if(!S.xp.days||typeof S.xp.days!=="object")S.xp.days={};
-S.v=16;
+S.v=17;
 function save(){try{localStorage.setItem("rt1",JSON.stringify(S))}catch(e){alert("RoutineHub could not save your change. Browser storage may be full or disabled.")}}
 save();
 function key(d){d=d||new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
@@ -118,13 +137,14 @@ function questCard(){var rec=xpDay(),todayData=S.days[key()]||{d:{},w:0},checks=
  ["meals","Pack two field rations",mealCount+" / 2 meals",mealCount/2,!!rec.quests.meals],
  ["training","Train with intent",rec.lift?"Set recorded":"Record one working set",rec.lift?1:0,!!rec.quests.training]
  ],total=S.xp.total||0,level=xpLevel(),within=total%XP_PER_LEVEL,rank=XP_RANKS[Math.floor((level-1)/5)%XP_RANKS.length];
- return '<section class="card quest-panel"><div class="quest-title-row"><div class="quest-topline"><span class="quest-sigil" aria-hidden="true">✧</span><div><p class="eyebrow" style="margin:0 0 4px">THE ASHEN PATH</p><div class="quest-rank">'+rank+'</div><div class="quest-note">Every small act adds to your journey.</div></div></div><div class="quest-level">LEVEL<b>'+level+'</b></div></div><div class="quest-meta" style="margin-top:16px"><span class="quest-note">EMBER EXPERIENCE</span><b>'+total.toLocaleString("en-GB")+' XP</b></div><div class="quest-meter" role="progressbar" aria-label="Progress to next level" aria-valuenow="'+within+'" aria-valuemin="0" aria-valuemax="'+XP_PER_LEVEL+'"><i style="width:'+Math.round(within/XP_PER_LEVEL*100)+'%"></i></div><div class="quest-note" style="text-align:right;margin-top:5px">'+within+' / '+XP_PER_LEVEL+' XP to level '+(level+1)+'</div><div class="quest-list"><div class="eyebrow">DAILY QUESTS</div>'+items.map(function(x){return '<div class="quest-row'+(x[4]?' done':'')+'"><span class="quest-check" aria-hidden="true">'+(x[4]?'✓':'·')+'</span><span class="quest-name">'+x[1]+'<small style="display:block;font-weight:500;color:var(--rh-muted);margin-top:3px">'+x[2]+'</small></span><span class="quest-reward">+'+QUESTS.filter(function(q){return q.id===x[0]})[0].reward+' XP</span></div>'}).join("")+'</div><p class="quest-note" style="margin:12px 0 0">No streak penalties. Return whenever you are ready.</p></section>'}
+ return '<section class="card quest-panel"><div class="quest-title-row"><div class="quest-topline"><span class="quest-sigil" aria-hidden="true">✧</span><div><p class="eyebrow" style="margin:0 0 4px">THE ASHEN PATH</p><div class="quest-rank">'+rank+'</div><div class="quest-note">Every small act adds to your journey.</div></div></div><div class="quest-level">LEVEL<b>'+level+'</b></div></div><div class="quest-meta" style="margin-top:16px"><span class="quest-note">EMBER EXPERIENCE</span><b>'+total.toLocaleString("en-GB")+' XP</b></div><div class="quest-meter" role="progressbar" aria-label="Progress to next level" aria-valuenow="'+within+'" aria-valuemin="0" aria-valuemax="'+XP_PER_LEVEL+'"><i style="width:'+Math.round(within/XP_PER_LEVEL*100)+'%"></i></div><div class="quest-note" style="text-align:right;margin-top:5px">'+within+' / '+XP_PER_LEVEL+' XP to level '+(level+1)+'</div><div class="sleep-log"><label for="sl">LOG LAST NIGHT&#39;S SLEEP</label><div class="sleep-log-controls"><input type="number" id="sl" min="0.5" max="24" step="0.5" value="'+(todayData.sl||"")+'" placeholder="e.g. 7.5" inputmode="decimal" aria-label="Hours of sleep last night"><span>hours</span><button type="button" id="save-sleep">'+(todayData.sl?"Update log":"Log sleep")+'</button></div></div><div class="quest-list"><div class="eyebrow">DAILY QUESTS</div>'+items.map(function(x){return '<div class="quest-row'+(x[4]?' done':'')+'"><span class="quest-check" aria-hidden="true">'+(x[4]?'✓':'·')+'</span><span class="quest-name">'+x[1]+'<small style="display:block;font-weight:500;color:var(--rh-muted);margin-top:3px">'+x[2]+'</small></span><span class="quest-reward">+'+QUESTS.filter(function(q){return q.id===x[0]})[0].reward+' XP</span></div>'}).join("")+'</div><p class="quest-note" style="margin:12px 0 0">No streak penalties. Return whenever you are ready.</p></section>'}
 function updateXPBadge(){var el=document.getElementById("xp-badge");if(el){var total=S.xp.total||0;el.textContent="✧ "+total.toLocaleString("en-GB")+" XP · Lv "+xpLevel()}}
 function day(k){return S.days[k]||(S.days[k]={d:{},w:0})}
 function mins(t){var a=(t||"0:0").split(":");return+a[0]*60+ +a[1]}
 function ord(t){var m=mins(t);return m<360?m+1440:m}
 function list(){return S.r.slice().sort(function(a,b){return ord(a.t)-ord(b.t)})}
 function app(b,k){var dt=new Date(k+"T00:00:00"),g=dt.getDay();return!b.d||(b.d==="wk"?g>0&&g<6:b.d==="we"?g===0||g===6:b.d==="m1"?dt.getDate()===1:b.d.indexOf("days:")===0?b.d.slice(5).split(",").map(Number).indexOf(g)!==-1:/^d\d$/.test(b.d)?g===+b.d.charAt(1):true)}
+function routineDayNote(b,k){if(!b.dayNotes)return"";var d=new Date((k||key())+"T12:00:00");return b.dayNotes[d.getDay()]||""}
 function slp(){var a=S.r.filter(function(b){return b.id===1})[0],z=S.r.filter(function(b){return b.id===100})[0];if(!a||!z)return null;return{wake:a.t,bed:z.t,h:((mins(a.t)-mins(z.t)+1440)%1440)/60}}
 function pct(k){var dd=S.days[k]||{d:{}},en=S.r.filter(function(b){return b.on!==false&&app(b,k)}),n=en.filter(function(b){return dd.d[b.id]}).length;return en.length?Math.round(100*n/en.length):0}
 function bar(p,w){var v=Math.max(0,Math.min(100,+p||0));return'<span class="meter"><i style="width:'+v+'%"></i></span>'}
@@ -138,9 +158,9 @@ function today(){
  var h='<div class="page-intro"><p class="eyebrow">YOUR DAILY RHYTHM</p><h1>Today</h1><p class="tip"><span class="eyebrow" style="display:inline">YOUR LOCAL DAY</span> · '+esc(nw.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"}))+'<br>Small, steady steps across routines, rest and hydration.</p></div>';
  h+=questCard();
  h+='<div class="card"><b>Routine progress</b><div class="tip" style="margin-top:6px">'+bar(p,20)+' '+p+'%</div></div>';
- var sp=slp();if(sp)h+='<div class="card"><b>> SLEEP</b><div class="tip" style="margin-top:6px">Lights out '+sp.bed+', wake '+sp.wake+', plan '+sp.h.toFixed(1)+' hours</div><div class="row" style="margin-top:6px"><span class="tip">Last night (hours)</span><input type="number" step="0.5" id="sl" value="'+(dd.sl||"")+'" inputmode="decimal" style="width:90px"></div></div>';
+ var sp=slp();if(sp)h+='<div class="card"><b>Sleep schedule</b><div class="tip" style="margin-top:6px">Lights out '+sp.bed+', wake '+sp.wake+', planned sleep window '+sp.h.toFixed(1)+' hours</div></div>';
  h+='<div class="card"><b>Water</b><div class="tip" style="margin-top:6px">'+bar(wp,20)+' '+dd.w+' / '+S.wt+' ml</div><div class="w"><button data-w="250">+250 ml</button><button data-w="100">+100 ml</button><button data-w="-250">−250 ml</button></div></div>';
- L.forEach(function(b,i){h+='<div class="card'+(dd.d[b.id]?' done':'')+(i===nx?' next':'')+'"><div class="row"><input type="checkbox" data-b="'+b.id+'"'+(dd.d[b.id]?' checked':'')+'><span class="t">'+esc(b.t)+'</span><span style="flex:1">'+esc(b.n)+'</span><span class="tip">'+(b.ml?"+"+b.ml+"ml ":"")+(IC[b.c]||"")+'</span></div>'+(Array.isArray(b.detail)&&b.detail.length?'<details class="routine-detail"><summary>Show skincare steps</summary><ol>'+b.detail.map(function(step){return'<li>'+esc(step)+'</li>'}).join('')+'</ol></details>':'')+(i===nx?'<div class="tip rd" style="margin-top:4px">&gt; next up</div>':'')+'</div>'});
+ L.forEach(function(b,i){var note=routineDayNote(b,k);h+='<div class="card'+(dd.d[b.id]?' done':'')+(i===nx?' next':'')+'"><div class="row"><input type="checkbox" data-b="'+b.id+'"'+(dd.d[b.id]?' checked':'')+'><span class="t">'+esc(b.t)+'</span><span style="flex:1">'+esc(b.n)+'</span><span class="tip">'+(b.ml?"+"+b.ml+"ml ":"")+(IC[b.c]||"")+'</span></div>'+(note?'<div class="routine-day-note">'+esc(note)+'</div>':'')+(Array.isArray(b.detail)&&b.detail.length?'<details class="routine-detail"><summary>Show skincare steps</summary><ol>'+b.detail.map(function(step){return'<li>'+esc(step)+'</li>'}).join('')+'</ol></details>':'')+(i===nx?'<div class="tip rd" style="margin-top:4px">&gt; next up</div>':'')+'</div>'});
  return h}
 function week(){
  var h='<div class="page-intro"><p class="eyebrow">YOUR LAST SEVEN DAYS</p><h1>This week</h1></div>',tot=0,st=0,run=0,nm=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -161,7 +181,7 @@ function bind(){var q=function(s){return document.querySelectorAll(s)};
  q("[data-d]").forEach(function(e){e.onchange=function(){S.r.forEach(function(b){if(b.id==e.dataset.d){if(e.value==="all")delete b.d;else b.d=e.value}});save()}});
  q("[data-n]").forEach(function(e){e.onchange=function(){S.r.forEach(function(b){if(b.id==e.dataset.n)b.n=e.value});save()}});
  q("[data-sh]").forEach(function(e){e.onclick=function(){S.r.forEach(function(b){var m=(mins(b.t)+(+e.dataset.sh)+1440)%1440;b.t=("0"+Math.floor(m/60)).slice(-2)+":"+("0"+m%60).slice(-2)});save();render()}});
- var sl=document.getElementById("sl");if(sl)sl.onchange=function(){day(key()).sl=+sl.value||0;if(+sl.value>0)awardActionXP("sleep");completeQuests();save();render()};
+ var sl=document.getElementById("sl"),saveSleep=document.getElementById("save-sleep");if(saveSleep)saveSleep.onclick=function(){var hours=sl?Number(sl.value):0;if(!Number.isFinite(hours)||hours<0.5||hours>24){alert("Enter sleep from 0.5 to 24 hours.");return}day(key()).sl=hours;awardActionXP("sleep");completeQuests();save();render()};
  q("[data-x]").forEach(function(e){e.onclick=function(){if(confirm("Delete this block?")){S.r=S.r.filter(function(b){return b.id!=e.dataset.x});save();render()}}});
  var a=document.getElementById("add");if(a)a.onclick=function(){var m=0;S.r.forEach(function(b){m=Math.max(m,b.id)});S.r.push({id:m+1,t:"12:00",n:"New block",c:"free"});save();render()};
  var r=document.getElementById("rs");if(r)r.onclick=function(){if(confirm("Reset the routine to the suggested one?")){S.r=JSON.parse(JSON.stringify(DEF));save();render()}};

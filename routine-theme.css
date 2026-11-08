@@ -266,11 +266,57 @@ body.routinehub-page .xp-badge {
   line-height: 1.45;
 }
 
+.sleep-log {
+  display: grid;
+  gap: 8px;
+  margin-top: 17px;
+  padding: 13px;
+  border: 1px solid #96734488;
+  border-radius: 14px;
+  background: #0e0e10a8;
+}
+
+.sleep-log > label {
+  color: var(--rh-gold, #d9b875);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .1em;
+}
+
+.sleep-log-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.sleep-log-controls input {
+  width: 110px;
+  min-height: 42px;
+}
+
+.sleep-log-controls span {
+  color: var(--rh-muted);
+  font-size: 13px;
+}
+
+.sleep-log-controls button {
+  min-height: 42px;
+}
+
 .routine-detail {
   margin: 10px 0 0 34px;
   color: var(--rh-muted);
   font-size: 12px;
   line-height: 1.55;
+}
+
+.routine-day-note {
+  margin: 9px 0 0 34px;
+  color: var(--rh-gold, #d9b875);
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 700;
 }
 
 .routine-detail summary {
@@ -288,7 +334,7 @@ body.routinehub-page .xp-badge {
 }
 
 @media (max-width: 520px) {
-  .routine-detail { margin-left: 30px; }
+  .routine-detail, .routine-day-note { margin-left: 30px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
