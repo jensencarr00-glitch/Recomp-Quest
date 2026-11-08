@@ -420,7 +420,7 @@ test("Lift covers all major muscle groups, adds forearm and core work, and label
     for (let i = 0; i < plan[day].ex.length; i++) assert(muscleTarget(day, i), `${plan[day].ex[i][0]} has a muscle target`);
   }
   for (const day of [1, 4]) {
-    assert(plan[day].ex.some((exercise) => /dead bug|suitcase hold/i.test(exercise[0])), `${plan[day].day} includes core work`);
+    assert(plan[day].ex.some((exercise) => /chair march|suitcase hold/i.test(exercise[0])), `${plan[day].day} includes core work`);
     for (let i = 0; i < plan[day].ex.length; i++) assert(muscleTarget(day, i), `${plan[day].ex[i][0]} has a muscle target`);
   }
   assert.match(plan[1].focus, /Quads.*Glutes.*Hamstrings.*Calves/);
@@ -431,6 +431,34 @@ test("Lift covers all major muscle groups, adds forearm and core work, and label
   assert.match(html, /Targets: Forearms/);
   vm.runInContext("activeDay=0;page='workout';render()", lift.context);
   assert.match(lift.dom.document.getElementById("app").innerHTML, /Muscles worked:/);
+});
+
+test("Lift defaults to small-space chair and wall exercises and preserves optional bench mode and old labels", () => {
+  const oldDate = "2026-11-02";
+  const oldLog = { [oldDate]: { day: 0, sets: { "0_0": [{ w: 7, r: 10, done: true }] }, splitVersion: 2 } };
+  const storage = localStorage({ lift_redesign_v1: JSON.stringify({ logs: oldLog, cardio: [], maxDb: 20, increment: 0.5, rest: 120 }) });
+  const lift = runScript(inlineScript("lift.html"), "lift.html#small-space", { storage });
+  let plan = vm.runInContext("PLAN", lift.context);
+  for (const day of [0, 1, 3, 4]) for (const exercise of plan[day].ex) {
+    assert.doesNotMatch(exercise[0], /floor|lying|dead bug|glute bridge/i, `${exercise[0]} can be done without using floor space`);
+    assert.doesNotMatch(exercise[6], /lie on the floor|lie down|floor/i, `${exercise[0]} cue avoids floor setup`);
+  }
+  assert(plan[0].ex.some((exercise) => /wall push-up/i.test(exercise[0])));
+  assert(plan[1].ex.some((exercise) => /chair/i.test(exercise[0])));
+  assert.equal(vm.runInContext("exerciseNameForLog(state.logs['2026-11-02'],0,0)", lift.context), "Dumbbell floor press", "older entries keep their original exercise name");
+  vm.runInContext("page='progress';render()", lift.context);
+  assert.match(lift.dom.document.getElementById("app").innerHTML, /Dumbbell floor press/);
+  lift.context.action("settings");
+  assert.match(lift.dom.document.getElementById("app").innerHTML, /BENCH WORKOUTS: OFF/);
+  vm.runInContext("toast=()=>{}", lift.context);
+  lift.context.action("toggleBench");
+  plan = vm.runInContext("PLAN", lift.context);
+  assert.equal(plan[0].ex[0][0], "Dumbbell bench press");
+  assert.equal(plan[3].ex[1][0], "Chest-supported dumbbell row on bench");
+  assert.equal(plan[3].ex[5][0], "Bench-supported dumbbell triceps extension");
+  assert.equal(JSON.parse(storage.getItem("lift_redesign_v1")).useBench, true, "bench preference is saved with Lift settings");
+  const reloaded = runScript(inlineScript("lift.html"), "lift.html#bench-reload", { storage });
+  assert.equal(vm.runInContext("PLAN[0].ex[0][0]", reloaded.context), "Dumbbell bench press", "the optional bench plan persists after reload");
 });
 
 test("all inline scripts parse and required offline assets are cached", () => {
