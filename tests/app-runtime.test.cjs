@@ -406,6 +406,33 @@ test("Meals and Lift retain their own stores and notify only the parent app of e
   assert.equal(JSON.parse(liftStorage.getItem("lift_redesign_v1")).logs[oldDate].sets["0_0"][0].w, 8);
 });
 
+test("Lift covers all major muscle groups, adds forearm and core work, and labels each target", () => {
+  const lift = runScript(inlineScript("lift.html"), "lift.html#muscle-coverage");
+  const plan = vm.runInContext("PLAN", lift.context);
+  const muscleTarget = (day, exercise) => vm.runInContext(`muscleTarget(${day},${exercise})`, lift.context);
+  assert.equal(plan[0].day, "Monday");
+  assert.equal(plan[1].day, "Tuesday");
+  assert.equal(plan[3].day, "Thursday");
+  assert.equal(plan[4].day, "Friday");
+  assert.equal(plan[2].rest && plan[5].rest && plan[6].rest, true, "Wednesday and weekends stay recovery days");
+  for (const day of [0, 3]) {
+    assert(plan[day].ex.some((exercise) => /wrist curl/i.test(exercise[0]) || /forearm|farmer hold/i.test(exercise[0])), `${plan[day].day} includes direct forearm work`);
+    for (let i = 0; i < plan[day].ex.length; i++) assert(muscleTarget(day, i), `${plan[day].ex[i][0]} has a muscle target`);
+  }
+  for (const day of [1, 4]) {
+    assert(plan[day].ex.some((exercise) => /dead bug|suitcase hold/i.test(exercise[0])), `${plan[day].day} includes core work`);
+    for (let i = 0; i < plan[day].ex.length; i++) assert(muscleTarget(day, i), `${plan[day].ex[i][0]} has a muscle target`);
+  }
+  assert.match(plan[1].focus, /Quads.*Glutes.*Hamstrings.*Calves/);
+  assert.match(plan[4].focus, /Quads.*Glutes.*Hamstrings.*Calves/);
+  lift.context.action("plan");
+  const html = lift.dom.document.getElementById("app").innerHTML;
+  assert.match(html, /Weekly coverage/);
+  assert.match(html, /Targets: Forearms/);
+  vm.runInContext("activeDay=0;page='workout';render()", lift.context);
+  assert.match(lift.dom.document.getElementById("app").innerHTML, /Muscles worked:/);
+});
+
 test("all inline scripts parse and required offline assets are cached", () => {
   new vm.Script(read("routine.js"), { filename: "routine.js" });
   new vm.Script(read("sw.js"), { filename: "sw.js" });
