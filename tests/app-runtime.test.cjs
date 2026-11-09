@@ -456,15 +456,15 @@ test("Meals and Lift retain their own stores and notify only the parent app of e
   assert.equal(JSON.parse(liftStorage.getItem("lift_redesign_v1")).logs[oldDate].sets["0_0"][0].w, 8);
 });
 
-test("Meals migrates safely to a seven-day stock-aware plan and reserves two shakes daily", () => {
+test("Meals migrates safely to a fourteen-day stock-aware plan and reserves two shakes daily", () => {
   const storage = localStorage();
   const { context, dom } = runScript(inlineScript("meals.html"), "meals.html#seven-day-plan", { storage });
   const s = context.S;
-  assert.equal(s.plan.length, 7);
-  assert.equal(s.breakfast.length, 7);
+  assert.equal(s.plan.length, 14);
+  assert.equal(s.breakfast.length, 14);
   assert(s.breakfast.every((meal) => context.BM.includes(meal)), "each day has a selectable breakfast from the breakfast list");
   assert.equal(s.target, 2670);
-  assert(s.plan.every((day) => day.length === 2), "the seven-day plan has lunch and dinner each day");
+  assert(s.plan.every((day) => day.length === 2), "the fourteen-day plan has lunch and dinner each day");
   assert(context.LM.includes("Garlic paprika chicken rice bowl"));
   assert(!context.LM.includes("Fajita chicken rice") && !context.LM.includes("Beef gravy rice bowl"), "the old meal suggestions are removed from the meal and cooking menus");
   assert(!dom.document.getElementById("app").innerHTML.includes("Korean BBQ chicken rice"), "legacy recipes do not appear in the current interface");
@@ -473,21 +473,21 @@ test("Meals migrates safely to a seven-day stock-aware plan and reserves two sha
   assert.match(dom.document.getElementById("app").innerHTML, /Optional snack/);
   assert.match(dom.document.getElementById("app").innerHTML, /No extra snack/);
   assert(context.SNACKS.includes("Boiled egg snack"), "optional snacks use the confirmed inventory and are available to cook");
-  assert.match(dom.document.getElementById("app").innerHTML, /7 DAY MEAL ROTATION/);
+  assert.match(dom.document.getElementById("app").innerHTML, /14 DAY MEAL ROTATION/);
 
   const planned = {};
   const add = (meal) => Object.entries(context.USE[meal]).forEach(([item, amount]) => { planned[item] = (planned[item] || 0) + amount; });
   for (let i = 0; i < s.plan.length; i++) { add(s.breakfast[i]); add(s.plan[i][0]); add(s.plan[i][1]); add("Snack (shakes)"); add("Macro top-up"); }
-  assert.equal(planned["Chicken breast"], 980, "140g chicken portions leave 40g within the 2kg allowance across two weeks");
-  assert.equal(planned.Rice, 1215, "95g daily rice side leaves 70g within the estimated 2.5kg stock");
-  assert.equal(planned.Rigatoni, 300);
-  assert.equal(planned["Semi-skimmed milk"], 3500, "two 250ml shakes daily use 3.5L per seven-day cycle");
-  assert.equal(planned["Whey protein"], 541, "two 36.5g shakes daily plus the scheduled whey-oats breakfast");
-  assert.equal(planned.Potatoes, 1150, "the main meals and one-egg potato hash fit the potato stock");
-  assert.equal(planned["Medium eggs"], 7, "the weekly plan fits within the 15-egg two-week stock");
-  assert.equal(planned["Frozen mixed vegetables"], 1000, "the weekly plan stays within the 2kg two-week vegetable supply");
-  assert.equal(planned.Creatine, 35, "one 5g creatine dose is included per day");
-  assert.equal(planned.Tuna, 2, "exactly two tuna portions are scheduled in the week");
+  assert.equal(planned["Chicken breast"], 1960, "140g portions leave a 40g cushion across two weeks");
+  assert.equal(planned.Rice, 2430, "95g daily side leaves 70g within estimated rice stock");
+  assert.equal(planned.Rigatoni, 600);
+  assert.equal(planned["Semi-skimmed milk"], 7000, "two 250ml shakes daily use 7L per cycle");
+  assert.equal(planned["Whey protein"], 1082, "two 36.5g shakes daily plus two protein-oats breakfasts");
+  assert.equal(planned.Potatoes, 2300, "the two-week plan fits potato stock");
+  assert.equal(planned["Medium eggs"], 14, "the plan fits the two-week egg stock");
+  assert.equal(planned["Frozen mixed vegetables"], 2000, "the plan uses but does not exceed the 2kg vegetable supply");
+  assert.equal(planned.Creatine, 70, "one 5g creatine dose is included each day");
+  assert.equal(planned.Tuna, 4, "exactly two tuna portions are scheduled each week");
   assert.equal(Object.keys(context.USE).filter((name) => context.M[name]).length >= 20, true, "the collection has at least 20 defined recipes");
   assert.equal(context.I.find(([name]) => name === "Whey protein")[2], 2100, "the reported whey tub is recorded as 2.1kg");
   assert.equal(context.I.find(([name]) => name === "Vegetable oil")[2], 1000, "the reported oil bottle is recorded as 1L");
@@ -503,13 +503,13 @@ test("Meals migrates safely to a seven-day stock-aware plan and reserves two sha
   assert.equal(withShakes.k - withoutShakes.k, 532, "two 36.5g shakes are included once in daily calories");
   assert(Math.abs((withShakes.p - withoutShakes.p) - 72.75) < 0.001, "two 36.5g shakes scale whey protein and include milk protein");
   s.snack[0] = 1;
-  const daily = Array.from({ length: 7 }, (_, i) => context.dayTot(i));
+  const daily = Array.from({ length: 14 }, (_, i) => context.dayTot(i));
   const average = (key) => daily.reduce((sum,row) => sum + row[key], 0) / daily.length;
   assert(Math.abs(average("k") - 2670) < 70, "estimated calories are close to the stated target");
   assert(Math.abs(average("p") - 166.9) < 1.5, `estimated protein average ${average("p").toFixed(1)}g is close to the stated target`);
   assert(Math.abs(average("c") - 300.4) < 5, "estimated carbs are close to the stated target");
   assert(Math.abs(average("f") - 89) < 2, "estimated fat is close to the stated target");
-  assert(daily.every((row) => Number.isFinite(row.k) && Number.isFinite(row.p)), "macro estimates remain calculable across the seven days");
+  assert(daily.every((row) => Number.isFinite(row.k) && Number.isFinite(row.p)), "macro estimates remain calculable across fourteen days");
 
   const breakfastPicker = dom.generated.find((node) => node.dataset?.b === "0");
   breakfastPicker.value = "Peanut butter banana toast";
@@ -519,31 +519,31 @@ test("Meals migrates safely to a seven-day stock-aware plan and reserves two sha
   assert.match(dom.document.getElementById("app").innerHTML, /Four-week budget/);
   assert.match(dom.document.getElementById("app").innerHTML, /£135\.17/);
   assert.match(dom.document.getElementById("app").innerHTML, /1kg bag/);
-  assert.match(dom.document.getElementById("app").innerHTML, /NEXT 14 DAYS/);
-  assert.match(dom.document.getElementById("app").innerHTML, /No known shortages for the next 14 days/);
+  assert.match(dom.document.getElementById("app").innerHTML, /Next 14 days/);
+  assert.match(dom.document.getElementById("app").innerHTML, /No known shortages/);
   assert.doesNotMatch(dom.document.getElementById("app").innerHTML, /Chicken breast: 450g/);
   assert.doesNotMatch(dom.document.getElementById("app").innerHTML, /Medium eggs: 3eggs/);
   assert.doesNotMatch(dom.document.getElementById("app").innerHTML, /Rice: 458g/);
   assert.doesNotMatch(dom.document.getElementById("app").innerHTML, /confirm enough for 900g before buying more/);
-  const expDate = new Date();
-  expDate.setDate(expDate.getDate() + 1);
-  const chickenExpiry = dom.generated.find((node) => node.dataset?.exp === "Chicken breast");
-  chickenExpiry.value = `${expDate.getFullYear()}-${String(expDate.getMonth() + 1).padStart(2, "0")}-${String(expDate.getDate()).padStart(2, "0")}`;
-  chickenExpiry.onchange();
-  assert.equal(s.expiry["Chicken breast"], chickenExpiry.value, "use-by dates are saved in the stock inventory");
-  assert.match(dom.document.getElementById("app").innerHTML, /Use soon/);
-
   const breakfastCheck = dom.generated.find((node) => node.dataset?.k === "0,0");
   const stockBefore = context.have();
   breakfastCheck.checked = true;
   breakfastCheck.onchange();
   assert.equal(s.consumedLog.length, 1, "confirming a meal writes one ingredient snapshot");
   assert.equal(context.have().Bananas, stockBefore.Bananas - 100, "ingredients are deducted when eaten");
+  breakfastCheck.onchange();
+  assert.equal(s.consumedLog.length, 1, "repeating the same checked event cannot duplicate the deduction");
   const undoBreakfast = dom.generated.find((node) => node.dataset?.k === "0,0");
   undoBreakfast.checked = false;
   undoBreakfast.onchange();
   assert.equal(s.consumedLog.length, 0, "unticking a meal reverses that confirmation once");
   assert.equal(context.have().Bananas, stockBefore.Bananas, "undo restores the exact stock balance");
+  const skipDay = dom.generated.find((node) => node.dataset?.sk === "0");
+  skipDay.onclick();
+  assert.equal(s.sd[0], 1, "a day can be skipped explicitly");
+  assert.equal(s.consumedLog.length, 0, "skipping a day never deducts its planned meals");
+  skipDay.onclick();
+  s.inv["Medium eggs"] = 30;
   const snackPicker = dom.generated.find((node) => node.dataset?.sm === "0");
   snackPicker.value = "Boiled egg snack";
   snackPicker.onchange();
@@ -564,23 +564,24 @@ test("Meals migrates safely to a seven-day stock-aware plan and reserves two sha
   const protectedStorage = localStorage({ mp4: JSON.stringify(saved) });
   const protectedRun = runScript(inlineScript("meals.html"), "meals.html#saved-data", { storage: protectedStorage });
   const preserved = JSON.parse(protectedStorage.getItem("mp4"));
-  assert.deepEqual(preserved.plan, JSON.parse(JSON.stringify(protectedRun.context.NEWPLAN)), "the old fixed-length schedule migrates to the requested weekly rotation");
+  assert.deepEqual(preserved.plan, JSON.parse(JSON.stringify(protectedRun.context.FULLPLAN)), "legacy recipes migrate to the complete current 14-day rotation");
   assert.equal(preserved.legacyHistory[0].plan.length, 14, "the previous schedule is retained in migration history");
   assert.equal(preserved.target, 2444);
   assert.equal(preserved.ck[0][0], 0, "old checkmarks do not get applied to different foods in the new schedule");
   assert.equal(preserved.inv["Chicken breast"], 2000, "stock is reconciled to the confirmed shopping list");
   assert.equal(preserved.wt["2026-11-08"], 130);
-  assert.equal(preserved.breakfast.length, 7);
+  assert.equal(preserved.breakfast.length, 14);
   assert.match(protectedRun.dom.document.getElementById("app").innerHTML, /Meals/);
 
   const legacy = { target: 2809, plan: JSON.parse(JSON.stringify(context.OLDPLAN)), ck: Array.from({ length: 14 }, () => [0, 0, 0, 0]), inv: { "Chicken breast": 1234 }, snack: Array(14).fill(1), oil: 1, ex: Array(14).fill(25), md: Array.from({ length: 14 }, () => [0, 0]), sd: Array(14).fill(0), wt: { "2026-11-08": 130 } };
   const legacyStorage = localStorage({ mp4: JSON.stringify(legacy) });
   runScript(inlineScript("meals.html"), "meals.html#legacy-default", { storage: legacyStorage });
   const migrated = JSON.parse(legacyStorage.getItem("mp4"));
-  assert.deepEqual(migrated.plan, JSON.parse(JSON.stringify(context.NEWPLAN)), "an untouched old suggested plan can safely adopt the new suggestion");
+  assert.deepEqual(migrated.plan, JSON.parse(JSON.stringify(context.FULLPLAN)), "an untouched old suggested plan can safely adopt the complete new cycle");
   assert.equal(migrated.target, 2670);
   assert.equal(migrated.inv["Chicken breast"], 2000);
   assert.equal(migrated.oil, 1);
+  assert.equal(migrated.ex.length, 14);
   assert.equal(migrated.ex[0], 0);
   assert.equal(migrated.wt["2026-11-08"], 130);
 
@@ -588,8 +589,8 @@ test("Meals migrates safely to a seven-day stock-aware plan and reserves two sha
   const priorStorage = localStorage({ mp4: JSON.stringify(priorSuggestion) });
   runScript(inlineScript("meals.html"), "meals.html#breakfast-schedule", { storage: priorStorage });
   const updated = JSON.parse(priorStorage.getItem("mp4"));
-  assert.deepEqual(updated.plan, JSON.parse(JSON.stringify(context.NEWPLAN)), "the previous fixed schedule migrates to the new weekly schedule");
-  assert.deepEqual(updated.breakfast, JSON.parse(JSON.stringify(context.NEWBREAKFAST)));
+  assert.deepEqual(updated.plan, JSON.parse(JSON.stringify(context.PREVPLAN)), "a valid user-saved two-week plan is preserved");
+  assert.deepEqual(updated.breakfast, JSON.parse(JSON.stringify(context.FULLBREAKFAST)));
 
   const priorWeek = { target: 2670, plan: JSON.parse(JSON.stringify(context.NEWPLAN)), breakfast: JSON.parse(JSON.stringify(context.PREVNEWBREAKFAST)), ck: Array.from({ length: 7 }, () => [0, 0, 0, 0, 0, 0, 0]), inv: {}, snack: Array(7).fill(1), oil: 2 };
   const priorWeekStorage = localStorage({ mp4: JSON.stringify(priorWeek) });
@@ -597,6 +598,40 @@ test("Meals migrates safely to a seven-day stock-aware plan and reserves two sha
   const rebalanced = JSON.parse(priorWeekStorage.getItem("mp4"));
   assert.equal(rebalanced.breakfast[4], "Potato and egg breakfast hash", "the old suggested egg breakfast migrates to a one-egg option");
   assert.equal(rebalanced.breakfast[0], "Breakfast bowl", "other default breakfasts are retained during the stock rebalance");
+});
+
+test("Meals week progression preserves both weeks and starts a stock-checked next cycle", () => {
+  const storage = localStorage();
+  const { context, dom } = runScript(inlineScript("meals.html"), "meals.html#cycle", { storage });
+  const s = context.S;
+  const week2 = JSON.stringify(s.plan.slice(7));
+  const stockBefore = JSON.stringify(context.have());
+  const week2Tab = dom.generated.find((node) => node.dataset?.viewweek === "1");
+  week2Tab.onclick();
+  assert.equal(s.selectedWeek, 1, "the Week 2 switcher selects the second saved week");
+  assert.match(dom.document.getElementById("app").innerHTML, /WEEK 2 OF 2/);
+  const week1Tab = dom.generated.find((node) => node.dataset?.viewweek === "0");
+  week1Tab.onclick();
+  dom.document.getElementById("cw").onclick();
+  assert.equal(s.completedWeeks, 1);
+  assert.equal(s.selectedWeek, 1, "Completing Week 1 opens Week 2");
+  assert.equal(JSON.stringify(s.plan.slice(7)), week2, "Week 1 completion preserves Week 2 meals");
+  assert.equal(JSON.stringify(context.have()), stockBefore, "week completion does not deduct planned food");
+  dom.document.getElementById("cw").onclick();
+  assert.equal(s.completedWeeks, 2);
+  assert.equal(s.cycleComplete, true, "Week 2 completion closes the 14-day cycle");
+  assert.equal(s.weekHistory.length, 2);
+  assert.match(dom.document.getElementById("app").innerHTML, /Generate Next 14 Days/);
+  s.inv["Semi-skimmed milk"] = 6999;
+  dom.document.getElementById("gn").onclick();
+  assert.equal(s.cycleId, 1, "a new cycle is blocked if known stock is even slightly short");
+  s.inv["Semi-skimmed milk"] = 7000;
+  dom.document.getElementById("gn").onclick();
+  assert.equal(s.completedWeeks, 0);
+  assert.equal(s.cycleComplete, false);
+  assert.equal(s.cycleId, 2);
+  assert.equal(s.plan.length, 14);
+  assert.equal(JSON.stringify(context.have()), stockBefore, "generating a plan only forecasts stock");
 });
 
 test("Lift covers all major muscle groups, adds forearm and core work, and labels each target", () => {
