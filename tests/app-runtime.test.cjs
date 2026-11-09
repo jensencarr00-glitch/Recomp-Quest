@@ -461,28 +461,31 @@ test("Meals builds a two-week trolley plan with two milk shakes and protects sav
   const { context, dom } = runScript(inlineScript("meals.html"), "meals.html#two-week-plan", { storage });
   const s = context.S;
   assert.equal(s.plan.length, 14);
+  assert.equal(s.breakfast.length, 14);
+  assert(s.breakfast.every((meal) => context.BM.includes(meal)), "each day has a selectable breakfast from the breakfast list");
   assert.equal(s.target, 2670);
   assert(s.plan.every((day) => day.length === 2), "the 14-day plan has lunch and dinner each day");
   assert(context.LM.includes("Garlic paprika chicken rice bowl"));
   assert(!context.LM.includes("Fajita chicken rice") && !context.LM.includes("Beef gravy rice bowl"), "the old meal suggestions are removed from the meal and cooking menus");
   assert(!dom.document.getElementById("app").innerHTML.includes("Korean BBQ chicken rice"), "legacy recipes do not appear in the current interface");
   assert.match(dom.document.getElementById("app").innerHTML, /Two protein shakes · 250ml milk each/);
+  assert.match(dom.document.getElementById("app").innerHTML, /data-b="0"/);
   assert.match(dom.document.getElementById("app").innerHTML, /Macro\/produce top-up: rice, peanut butter, carrot, onion and measured oil/);
 
   const planned = {};
   const add = (meal) => Object.entries(context.USE[meal]).forEach(([item, amount]) => { planned[item] = (planned[item] || 0) + amount; });
-  for (const day of s.plan) { add("Breakfast bowl"); add(day[0]); add(day[1]); add("Snack (shakes)"); add("Daily peanut butter toast"); add("Macro top-up"); }
+  for (let i = 0; i < s.plan.length; i++) { add(s.breakfast[i]); add(s.plan[i][0]); add(s.plan[i][1]); add("Snack (shakes)"); add("Daily peanut butter toast"); add("Macro top-up"); }
   assert.equal(planned["Chicken breast"], 1960, "140g chicken portions stretch the ordered 2kg across all 14 days");
   assert.equal(planned.Eggs, 15);
   assert.equal(planned.Tuna, 4);
-  assert.equal(planned["Baked beans"], 1510, "bean portions include the two smoky chicken meals");
+  assert.equal(planned["Baked beans"], 1610, "the schedule uses beans in mains and its final egg-and-bean breakfast");
   assert.equal(planned.Milk, 7000, "two 250ml shakes daily use 7L over 14 days");
-  assert.equal(planned["Whey protein"], 840, "two 30g scoops per day");
-  assert.equal(planned["Wholemeal bread"], 20);
-  assert.equal(planned["Peanut butter"], 910);
-  assert.equal(planned.Bananas, 1400, "breakfast uses the ordered bananas across the fortnight");
-  assert.equal(planned["Greek-style yoghurt"], 490, "breakfast uses the visible yoghurt tub without exceeding it");
-  assert.equal(planned["Jumbo oats"], 840, "breakfast uses the ordered oats across the fortnight");
+  assert.equal(planned["Whey protein"], 870, "two daily shake servings plus the chocolate-oat breakfast");
+  assert.equal(planned["Wholemeal bread"], 26);
+  assert.equal(planned["Peanut butter"], 970);
+  assert.equal(planned.Bananas, 1250, "the breakfast rotation uses the ordered bananas across the fortnight");
+  assert.equal(planned["Greek-style yoghurt"], 445, "the breakfast rotation fits the visible yoghurt tub");
+  assert.equal(planned["Jumbo oats"], 520, "the breakfast rotation uses the ordered oats across the fortnight");
   for (const ingredient of ["Chicken breast", "Milk", "Baked beans", "Tuna", "Eggs", "Mixed vegetables", "Potatoes", "Carrots", "Passata", "Onions", "Wholemeal bread", "Peanut butter", "Bananas", "Greek-style yoghurt", "Jumbo oats"]) {
     assert(planned[ingredient] > 0, `${ingredient} is included in the two-week plan`);
   }
@@ -497,6 +500,13 @@ test("Meals builds a two-week trolley plan with two milk shakes and protects sav
   assert(Math.abs(average("c") - 300) < 5, `estimated plan carbs are near target (${average("c")})`);
   assert(Math.abs(average("f") - 89) < 5, `estimated plan fat is near target (${average("f")})`);
 
+  const breakfastPicker = dom.generated.find((node) => node.dataset?.b === "0");
+  breakfastPicker.value = "Peanut butter banana toast";
+  breakfastPicker.onchange();
+  assert.equal(s.breakfast[0], "Peanut butter banana toast", "a breakfast selection saves to that day");
+  vm.runInContext("tab=3;render()", context);
+  assert.match(dom.document.getElementById("app").innerHTML, /planned: 28slices/);
+
   const customPlan = JSON.parse(JSON.stringify(context.OLDPLAN));
   const saved = { target: 2444, plan: customPlan, ck: Array.from({ length: 14 }, () => [0, 0, 0, 0]), inv: { "Chicken breast": 1234 }, snack: Array(14).fill(1), oil: 2, wt: { "2026-11-08": 130 } };
   saved.ck[0][0] = 1;
@@ -508,6 +518,7 @@ test("Meals builds a two-week trolley plan with two milk shakes and protects sav
   assert.equal(preserved.ck[0][0], 1);
   assert.equal(preserved.inv["Chicken breast"], 1234);
   assert.equal(preserved.wt["2026-11-08"], 130);
+  assert.equal(preserved.breakfast[13], "Breakfast bowl", "adding breakfast choices to an older customized plan does not create an egg-stock shortfall");
   assert.match(protectedRun.dom.document.getElementById("app").innerHTML, /Meals/);
 
   const legacy = { target: 2809, plan: JSON.parse(JSON.stringify(context.OLDPLAN)), ck: Array.from({ length: 14 }, () => [0, 0, 0, 0]), inv: { "Chicken breast": 1234 }, snack: Array(14).fill(1), oil: 1, ex: Array(14).fill(25), md: Array.from({ length: 14 }, () => [0, 0]), sd: Array(14).fill(0), wt: { "2026-11-08": 130 } };
@@ -520,6 +531,13 @@ test("Meals builds a two-week trolley plan with two milk shakes and protects sav
   assert.equal(migrated.oil, 1);
   assert.equal(migrated.ex[0], 25);
   assert.equal(migrated.wt["2026-11-08"], 130);
+
+  const priorSuggestion = { target: 2670, plan: JSON.parse(JSON.stringify(context.PREVPLAN)), ck: Array.from({ length: 14 }, () => [0, 0, 0, 0]), inv: {}, snack: Array(14).fill(1), oil: 2 };
+  const priorStorage = localStorage({ mp4: JSON.stringify(priorSuggestion) });
+  runScript(inlineScript("meals.html"), "meals.html#breakfast-schedule", { storage: priorStorage });
+  const updated = JSON.parse(priorStorage.getItem("mp4"));
+  assert.deepEqual(updated.plan, JSON.parse(JSON.stringify(context.NEWPLAN)), "the untouched previous suggestion updates safely to balance the new breakfast choices");
+  assert.deepEqual(updated.breakfast, JSON.parse(JSON.stringify(context.NEWBREAKFAST)));
 });
 
 test("Lift covers all major muscle groups, adds forearm and core work, and labels each target", () => {
