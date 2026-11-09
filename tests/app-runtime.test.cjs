@@ -463,6 +463,9 @@ test("Meals builds a two-week trolley plan with two milk shakes and protects sav
   assert.equal(s.plan.length, 14);
   assert.equal(s.target, 2670);
   assert(s.plan.every((day) => day.length === 2), "the 14-day plan has lunch and dinner each day");
+  assert(context.LM.includes("Garlic paprika chicken rice bowl"));
+  assert(!context.LM.includes("Fajita chicken rice") && !context.LM.includes("Beef gravy rice bowl"), "the old meal suggestions are removed from the meal and cooking menus");
+  assert(!dom.document.getElementById("app").innerHTML.includes("Korean BBQ chicken rice"), "legacy recipes do not appear in the current interface");
   assert.match(dom.document.getElementById("app").innerHTML, /Two protein shakes · 250ml milk each/);
   assert.match(dom.document.getElementById("app").innerHTML, /Macro\/produce top-up: rice, peanut butter, carrot, onion and measured oil/);
 
@@ -477,6 +480,12 @@ test("Meals builds a two-week trolley plan with two milk shakes and protects sav
   assert.equal(planned["Whey protein"], 840, "two 30g scoops per day");
   assert.equal(planned["Wholemeal bread"], 20);
   assert.equal(planned["Peanut butter"], 910);
+  assert.equal(planned.Bananas, 1400, "breakfast uses the ordered bananas across the fortnight");
+  assert.equal(planned["Greek-style yoghurt"], 490, "breakfast uses the visible yoghurt tub without exceeding it");
+  assert.equal(planned["Jumbo oats"], 840, "breakfast uses the ordered oats across the fortnight");
+  for (const ingredient of ["Chicken breast", "Milk", "Baked beans", "Tuna", "Eggs", "Mixed vegetables", "Potatoes", "Carrots", "Passata", "Onions", "Wholemeal bread", "Peanut butter", "Bananas", "Greek-style yoghurt", "Jumbo oats"]) {
+    assert(planned[ingredient] > 0, `${ingredient} is included in the two-week plan`);
+  }
   const stock = Object.fromEntries(context.I.map(([name, , amount]) => [name, amount]));
   for (const [item, amount] of Object.entries(planned)) {
     if (Object.hasOwn(stock, item)) assert(amount <= stock[item], `${item} in the plan (${amount}) fits the visible order estimate (${stock[item]})`);
