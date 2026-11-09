@@ -668,9 +668,16 @@ test("Lift defaults to small-space chair and wall exercises and preserves option
   const lift = runScript(inlineScript("lift.html"), "lift.html#small-space", { storage });
   let plan = vm.runInContext("PLAN", lift.context);
   for (const day of [0, 1, 3, 4]) for (const exercise of plan[day].ex) {
+    if (exercise[0] === "Dumbbell floor skull crusher") {
+      assert.equal(day, 0, "the requested floor-based triceps option is confined to Upper A");
+      assert.match(exercise[6], /lie on your back/i);
+      continue;
+    }
     assert.doesNotMatch(exercise[0], /floor|lying|dead bug|glute bridge/i, `${exercise[0]} can be done without using floor space`);
     assert.doesNotMatch(exercise[6], /lie on the floor|lie down|floor/i, `${exercise[0]} cue avoids floor setup`);
   }
+  assert.equal(plan[0].ex[5][0], "Dumbbell floor skull crusher");
+  assert.match(vm.runInContext("muscleTarget(0,5)", lift.context), /Triceps/);
   assert(plan[0].ex.some((exercise) => /wall push-up/i.test(exercise[0])));
   assert(plan[1].ex.some((exercise) => /chair/i.test(exercise[0])));
   assert.equal(vm.runInContext("exerciseNameForLog(state.logs['2026-11-02'],0,0)", lift.context), "Dumbbell floor press", "older entries keep their original exercise name");
