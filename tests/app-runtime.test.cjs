@@ -677,6 +677,7 @@ test("Lift defaults to small-space chair and wall exercises and preserves option
     assert.doesNotMatch(exercise[6], /lie on the floor|lie down|floor/i, `${exercise[0]} cue avoids floor setup`);
   }
   assert.equal(plan[0].ex[5][0], "Dumbbell floor skull crusher");
+  assert(![0, 3].flatMap((day) => plan[day].ex).some((exercise) => /triceps extension/i.test(exercise[0])), "the active equipment modes use skull crushers rather than triceps extensions");
   assert.match(vm.runInContext("muscleTarget(0,5)", lift.context), /Triceps/);
   assert(plan[0].ex.some((exercise) => /wall push-up/i.test(exercise[0])));
   assert(plan[1].ex.some((exercise) => /chair/i.test(exercise[0])));
@@ -690,7 +691,7 @@ test("Lift defaults to small-space chair and wall exercises and preserves option
   plan = vm.runInContext("PLAN", lift.context);
   assert.equal(plan[0].ex[0][0], "Dumbbell bench press");
   assert.equal(plan[3].ex[1][0], "Chest-supported dumbbell row on bench");
-  assert.equal(plan[3].ex[5][0], "Bench-supported dumbbell triceps extension");
+  assert.equal(plan[3].ex[5][0], "Bench dumbbell skull crusher");
   assert.equal(JSON.parse(storage.getItem("lift_redesign_v1")).useBench, true, "bench preference is saved with Lift settings");
   const reloaded = runScript(inlineScript("lift.html"), "lift.html#bench-reload", { storage });
   assert.equal(vm.runInContext("PLAN[0].ex[0][0]", reloaded.context), "Dumbbell bench press", "the optional bench plan persists after reload");
