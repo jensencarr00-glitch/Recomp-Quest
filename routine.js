@@ -18,9 +18,10 @@ var DEF=[
 {id:7,t:"12:30",n:"Protein snack or shake if it fits your nutrition plan",c:"eat",ml:300},
 {id:8,t:"13:30",n:"Caffeine cut-off: avoid caffeine from this point",c:"sleep"},
 {id:9,t:"14:00",n:"Lunch and a glass of water",c:"eat",ml:250},
-{id:26,t:"14:30",n:"Mouthwash if using: follow label; keep separate from brushing",c:"free"},
+{id:26,t:"14:30",n:"Optional mouthwash: 20 ml for 30 seconds, spit; keep separate from brushing and avoid food/drink for 30 minutes",c:"free"},
 {id:10,t:"15:00",n:"Study / focused work block 2",c:"study"},
-{id:11,t:"16:30",n:"Drink water and take a short movement break",c:"water",ml:250},
+{id:11,t:"16:00",n:"Drink water and take a short movement break",c:"water",ml:250},
+{id:64,t:"17:00",n:"Workout-day buffer: optional snack if hungry, water and set up for 18:00 training",c:"free",d:"days:1,2,4,5"},
 {id:13,t:"18:00",n:"Workout block: Lift Upper/Lower session (60 min)",c:"move",d:"days:1,2,4,5",ml:250},
 {id:15,t:"19:00",n:"Post-workout protein if needed to meet daily protein target",c:"eat"},
 {id:16,t:"19:30",n:"Dinner",c:"eat"},
@@ -28,18 +29,20 @@ var DEF=[
 {id:41,t:"20:10",n:"Wash dishes and wipe kitchen worktops after eating",c:"clean"},
 {id:63,t:"20:30",n:"Free time: gaming, relax or enjoy a hobby (up to 60 min)",c:"free"},
 {id:18,t:"21:00",n:"Water; prepare tomorrow's clothes and any food that needs defrosting",c:"water",ml:200},
-{id:19,t:"23:30",n:"Floss or clean between teeth with interdental brushes",c:"free"},
-{id:62,t:"23:35",n:"Gently clean tongue with scraper; do not press hard",c:"free"},
-{id:27,t:"23:40",n:"Brush teeth for 2 minutes with fluoride toothpaste; spit, don't rinse",c:"free"},
-{id:28,t:"22:25",n:"Wash face and apply moisturiser; lip balm if needed",c:"free",detail:["Wash your hands, then wet your face with lukewarm water.","Use one pump of gentle face wash on wet hands and rub your hands together to make a lather.","With your fingertips, massage gently over your chin, forehead and cheeks in slow circles for about 10–20 seconds. Do not scrub.","Rinse all cleanser away with lukewarm water, then pat your face dry with a clean towel.","Gently spread a pea-sized amount of moisturiser over your cheeks, chin and forehead.","Apply lip balm if you want to."]},
-{id:29,t:"22:40",n:"Prepare tomorrow: check schedule, tidy bedside and set alarm",c:"free"},
-{id:20,t:"23:00",n:"Wind down: dim lights, reduce screens and relax",c:"sleep"},
+{id:19,t:"23:45",n:"Floss or clean between teeth with interdental brushes",c:"free"},
+{id:62,t:"23:50",n:"Gently clean tongue with scraper; do not press hard",c:"free"},
+{id:27,t:"23:55",n:"Brush teeth for 2 minutes with fluoride toothpaste; spit, don't rinse",c:"free"},
+{id:28,t:"21:30",n:"Wash face and apply moisturiser; lip balm if needed",c:"free",detail:["Wash your hands, then wet your face with lukewarm water.","Use one pump of gentle face wash on wet hands and rub your hands together to make a lather.","With your fingertips, massage gently over your chin, forehead and cheeks in slow circles for about 10–20 seconds. Do not scrub.","Rinse all cleanser away with lukewarm water, then pat your face dry with a clean towel.","Gently spread a pea-sized amount of moisturiser over your cheeks, chin and forehead.","Apply lip balm if you want to."]},
+{id:29,t:"22:00",n:"Prepare tomorrow: choose clothes, check plans and set alarm",c:"free"},
+{id:65,t:"21:15",n:"Optional evening mouthwash: 20 ml for 30 seconds, spit; keep separate from brushing and avoid food/drink for 30 minutes",c:"free"},
+{id:20,t:"22:30",n:"Start wind-down: dim lights, lower stimulation and stop busy tasks",c:"sleep"},
+{id:66,t:"23:00",n:"Put phone away or use a calm activity; keep bedroom cool, dark and quiet",c:"sleep"},
 {id:100,t:"00:00",n:"Lights out — target 8 hours until 08:00",c:"sleep"},
-{id:50,t:"17:00",n:"Laundry: wash, dry and put clothes away",c:"clean",d:"d1"},
-{id:51,t:"17:00",n:"Clean bathroom: sink, toilet, shower and taps",c:"clean",d:"d2"},
-{id:52,t:"17:00",n:"Dust bedroom, desk and shelves",c:"clean",d:"d3"},
-{id:53,t:"17:00",n:"Vacuum bedroom and main floors; mop hard floors if needed",c:"clean",d:"d4"},
-{id:54,t:"17:00",n:"Wash towels and bath mat; replace with clean ones",c:"clean",d:"d5"},
+{id:50,t:"16:30",n:"Laundry: wash, dry and put clothes away",c:"clean",d:"d1"},
+{id:51,t:"16:30",n:"Clean bathroom: sink, toilet, shower and taps",c:"clean",d:"d2"},
+{id:52,t:"16:30",n:"Dust bedroom, desk and shelves",c:"clean",d:"d3"},
+{id:53,t:"16:30",n:"Vacuum bedroom and main floors; mop hard floors if needed",c:"clean",d:"d4"},
+{id:54,t:"16:30",n:"Wash towels and bath mat; replace with clean ones",c:"clean",d:"d5"},
 {id:55,t:"11:00",n:"Change bedsheets and pillowcases; air the bed",c:"clean",d:"d6"},
 {id:56,t:"11:30",n:"Kitchen reset: clean hob, sink, fridge handles and bins",c:"clean",d:"d0"},
 {id:57,t:"12:00",n:"Weekly grooming: trim/file nails, clean trimmer and hairbrush",c:"free",d:"d0"},
@@ -123,11 +126,32 @@ if(routineVersion<19){
   if(face&&hour<12)item.t="08:45";
  });
 }
+if(routineVersion<20){
+ S.r.forEach(function(item){var label=String(item.n||""),hour=parseInt(String(item.t||"00:00").slice(0,2),10)||0;
+  if(/wind[\s-]?down|dim lights|stop busy tasks/i.test(label)&&hour>=20)item.t="22:30";
+  else if(/phone away|put.*phone away|screen[s]? off|stop using.*screen/i.test(label)&&hour>=20)item.t="23:00";
+  else if(/floss|interdental/i.test(label)&&hour>=12)item.t="23:45";
+  else if(/tongue.*(scrap|clean)|(?:scrap|clean).*tongue/i.test(label)&&hour>=12)item.t="23:50";
+  else if(/brush(?:ing)? teeth/i.test(label)&&hour>=12)item.t="23:55";
+  else if(/mouthwash/i.test(label)){item.t=hour>=18?"21:15":"14:30";if(/^Mouthwash if using:/i.test(label))item.n="Optional mouthwash: 20 ml for 30 seconds, spit; keep separate from brushing and avoid food/drink for 30 minutes"}
+  else if(/face care|wash face and apply|face:\s*gentle|skincare/i.test(label)&&hour>=20)item.t="21:30";
+  else if(/prepare.{0,12}tomorrow|choose clothes|check plans.*alarm/i.test(label)&&hour>=12)item.t="22:00";
+  else if(/final home check|doors\/windows secure/i.test(label)&&hour>=12)item.t="22:10";
+  else if(/movement break|short movement|drink water and stretch/i.test(label)&&hour>=15&&hour<18)item.t="16:00";
+  else if(item.c==="clean"&&/^d[1-5]$/.test(String(item.d||""))&&hour>=16&&hour<18)item.t="16:30";
+  else if(/workout-day buffer|pre[- ]workout|training setup/i.test(label))item.t="17:00";
+ });
+ function ensureRoutineTask(seedId,pattern){if(S.r.some(function(item){return pattern.test(String(item.n||""))}))return;var seed=DEF.filter(function(item){return item.id===seedId})[0];if(!seed)return;var copy=JSON.parse(JSON.stringify(seed));if(S.r.some(function(item){return item.id===copy.id}))copy.id=S.r.reduce(function(max,item){return Math.max(max,+item.id||0)},0)+1;S.r.push(copy)}
+ ensureRoutineTask(64,/workout-day buffer|pre[- ]workout|training setup/i);
+ ensureRoutineTask(65,/evening mouthwash|mouthwash.*(?:evening|night)/i);
+ ensureRoutineTask(66,/phone away|put.*phone away|screen[s]? off|stop using.*screen/i);
+ if(!S.r.some(function(item){var label=String(item.n||""),hour=parseInt(String(item.t||"00:00").slice(0,2),10)||0;return /movement break|short movement|drink water and stretch/i.test(label)&&hour>=15&&hour<18})){var movement=JSON.parse(JSON.stringify(DEF.filter(function(item){return item.id===11})[0]));if(S.r.some(function(item){return item.id===movement.id}))movement.id=S.r.reduce(function(max,item){return Math.max(max,+item.id||0)},0)+1;S.r.push(movement)}
+}
 if(!Number.isFinite(+S.wt)||S.wt<1)S.wt=2000;
 if(!S.xp||typeof S.xp!=="object")S.xp={total:0,days:{}};
 if(!Number.isFinite(+S.xp.total)||S.xp.total<0)S.xp.total=0;else S.xp.total=+S.xp.total;
 if(!S.xp.days||typeof S.xp.days!=="object")S.xp.days={};
-S.v=19;
+S.v=20;
 function save(){try{localStorage.setItem("rt1",JSON.stringify(S))}catch(e){alert("RoutineHub could not save your change. Browser storage may be full or disabled.")}}
 save();
 function key(d){d=d||new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}

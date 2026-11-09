@@ -216,11 +216,61 @@ test("oral-care defaults sequence floss before brushing and keep mouthwash separ
   });
   assert.equal(routine.filter((item) => /floss or clean between teeth/i.test(item.n)).length, 1);
   assert.equal(routine.filter((item) => /clean tongue with scraper/i.test(item.n)).length, 1);
-  assert.equal(routine.find((item) => item.id === 19).t, "23:30");
-  assert.equal(routine.find((item) => item.id === 62).t, "23:35");
-  assert.equal(routine.find((item) => item.id === 27).t, "23:40");
+  assert.equal(routine.find((item) => item.id === 19).t, "23:45");
+  assert.equal(routine.find((item) => item.id === 62).t, "23:50");
+  assert.equal(routine.find((item) => item.id === 27).t, "23:55");
   assert.equal(routine.find((item) => item.id === 26).t, "14:30", "optional mouthwash stays after lunch, away from brushing");
-  assert.match(routine.find((item) => item.id === 26).n, /if using/);
+  assert.match(routine.find((item) => item.id === 26).n, /Optional mouthwash/);
+  assert.equal(routine.find((item) => item.id === 20).t, "22:30");
+  assert.equal(routine.find((item) => item.id === 66).t, "23:00");
+  assert.equal(routine.find((item) => item.id === 28).t, "21:30");
+  assert.equal(routine.find((item) => item.id === 29).t, "22:00");
+  assert.equal(routine.find((item) => item.id === 11).t, "16:00");
+  assert.equal(routine.find((item) => item.id === 64).t, "17:00");
+  assert.equal(routine.find((item) => item.id === 65).t, "21:15");
+  const orderedIds = context.list().map((item) => item.id);
+  assert(orderedIds.indexOf(20) < orderedIds.indexOf(66) && orderedIds.indexOf(66) < orderedIds.indexOf(19) && orderedIds.indexOf(19) < orderedIds.indexOf(62) && orderedIds.indexOf(62) < orderedIds.indexOf(27) && orderedIds.indexOf(27) < orderedIds.indexOf(100), "evening wind-down, screen-free time, floss, tongue cleaning, brushing and lights-out are in order");
+  assert.equal(routine.find((item) => item.id === 10).t, "15:00");
+  assert.equal(routine.find((item) => item.id === 50).t, "16:30", "weekday chores leave a workout setup buffer");
+  assert.equal(routine.find((item) => item.id === 13).t, "18:00");
+});
+
+test("routine v20 reorganizes an existing custom day while preserving labels and check-off history", () => {
+  const saved = { r: [
+    { id: 110, t: "23:00", n: "Start wind-down: dim lights, lower stimulation and stop busy tasks", c: "sleep" },
+    { id: 111, t: "23:15", n: "Put phone away or use a calm activity; keep bedroom cool, dark and quiet", c: "sleep" },
+    { id: 112, t: "23:30", n: "Floss carefully between every tooth; be gentle around the gumline", c: "free" },
+    { id: 113, t: "23:35", n: "Gently clean your tongue with the scraper; don't press hard", c: "free" },
+    { id: 114, t: "23:40", n: "Brush teeth for 2 minutes with fluoride toothpaste; spit, don't rinse", c: "free" },
+    { id: 115, t: "22:10", n: "Prepare tomorrow: choose clothes, check plans and get anything ready", c: "free" },
+    { id: 116, t: "22:20", n: "Final home check: cups away, floor clear, doors/windows secure", c: "free" },
+    { id: 117, t: "15:00", n: "Study / focused work block 2", c: "study" },
+    { id: 118, t: "16:30", n: "Drink water and take a short movement break", c: "water", ml: 250 },
+    { id: 119, t: "18:00", n: "Workout block: Lift Upper/Lower session (60 min)", c: "move", d: "days:1,2,4,5" },
+    { id: 120, t: "14:30", n: "Mouthwash if using: follow label; keep separate from brushing", c: "free" },
+    { id: 121, t: "22:25", n: "Wash face and apply moisturiser; lip balm if needed", c: "free" },
+  ], days: { "2026-11-08": { d: { 110: 1, 114: 1, 118: 1 }, w: 1250, sl: 7.5 } }, wt: 2000, v: 19 };
+  const { context } = runScript(read("routine.js"), "routine.js#schedule-refresh", { storage: localStorage({ rt1: JSON.stringify(saved) }) });
+  const find = (id) => context.S.r.find((item) => item.id === id);
+  assert.equal(find(110).t, "22:30");
+  assert.equal(find(111).t, "23:00");
+  assert.equal(find(112).t, "23:45");
+  assert.equal(find(113).t, "23:50");
+  assert.equal(find(114).t, "23:55");
+  assert.equal(find(115).t, "22:00");
+  assert.equal(find(116).t, "22:10");
+  assert.equal(find(117).t, "15:00");
+  assert.equal(find(118).t, "16:00");
+  assert.equal(find(119).t, "18:00");
+  assert.equal(find(120).t, "14:30");
+  assert.equal(find(121).t, "21:30");
+  assert(context.S.r.some((item) => item.d === "days:1,2,4,5" && /Workout-day buffer/.test(item.n)), "workout prep is added to workout days only");
+  assert(context.S.r.some((item) => item.t === "21:15" && /evening mouthwash/.test(item.n)), "an optional second bottle-directed mouthwash slot is added away from brushing");
+  assert.equal(context.S.days["2026-11-08"].d[110], 1);
+  assert.equal(context.S.days["2026-11-08"].d[114], 1);
+  assert.equal(context.S.days["2026-11-08"].w, 1250);
+  assert.equal(context.S.days["2026-11-08"].sl, 7.5);
+  assert.equal(context.S.v, 20);
 });
 
 test("skincare guidance expands under the morning and evening routine items", () => {
@@ -404,6 +454,63 @@ test("Meals and Lift retain their own stores and notify only the parent app of e
   hub.context.handleQuestMessage({ origin: lift.messages[0].origin, source: hub.dom.fixed.get("liftFrame").contentWindow, data: lift.messages[0].data });
   assert.equal(hub.context.S.xp.total, 27, "repeated workout messages are deduplicated");
   assert.equal(JSON.parse(liftStorage.getItem("lift_redesign_v1")).logs[oldDate].sets["0_0"][0].w, 8);
+});
+
+test("Meals builds a two-week trolley plan with two milk shakes and protects saved meal data", () => {
+  const storage = localStorage();
+  const { context, dom } = runScript(inlineScript("meals.html"), "meals.html#two-week-plan", { storage });
+  const s = context.S;
+  assert.equal(s.plan.length, 14);
+  assert.equal(s.target, 2670);
+  assert(s.plan.every((day) => day.length === 2), "the 14-day plan has lunch and dinner each day");
+  assert.match(dom.document.getElementById("app").innerHTML, /Two protein shakes · 250ml milk each/);
+  assert.match(dom.document.getElementById("app").innerHTML, /Macro\/produce top-up: rice, peanut butter, carrot, onion and measured oil/);
+
+  const planned = {};
+  const add = (meal) => Object.entries(context.USE[meal]).forEach(([item, amount]) => { planned[item] = (planned[item] || 0) + amount; });
+  for (const day of s.plan) { add("Breakfast bowl"); add(day[0]); add(day[1]); add("Snack (shakes)"); add("Daily peanut butter toast"); add("Macro top-up"); }
+  assert.equal(planned["Chicken breast"], 1960, "140g chicken portions stretch the ordered 2kg across all 14 days");
+  assert.equal(planned.Eggs, 15);
+  assert.equal(planned.Tuna, 4);
+  assert.equal(planned["Baked beans"], 1510, "bean portions include the two smoky chicken meals");
+  assert.equal(planned.Milk, 7000, "two 250ml shakes daily use 7L over 14 days");
+  assert.equal(planned["Whey protein"], 840, "two 30g scoops per day");
+  assert.equal(planned["Wholemeal bread"], 20);
+  assert.equal(planned["Peanut butter"], 910);
+  const stock = Object.fromEntries(context.I.map(([name, , amount]) => [name, amount]));
+  for (const [item, amount] of Object.entries(planned)) {
+    if (Object.hasOwn(stock, item)) assert(amount <= stock[item], `${item} in the plan (${amount}) fits the visible order estimate (${stock[item]})`);
+  }
+  const daily = Array.from({ length: 14 }, (_, i) => context.dayTot(i));
+  const average = (key) => daily.reduce((total, row) => total + row[key], 0) / daily.length;
+  assert(Math.abs(average("k") - 2670) < 60, `estimated plan calories are near target (${average("k")})`);
+  assert(Math.abs(average("p") - 167) < 5, `estimated plan protein is near target (${average("p")})`);
+  assert(Math.abs(average("c") - 300) < 5, `estimated plan carbs are near target (${average("c")})`);
+  assert(Math.abs(average("f") - 89) < 5, `estimated plan fat is near target (${average("f")})`);
+
+  const customPlan = JSON.parse(JSON.stringify(context.OLDPLAN));
+  const saved = { target: 2444, plan: customPlan, ck: Array.from({ length: 14 }, () => [0, 0, 0, 0]), inv: { "Chicken breast": 1234 }, snack: Array(14).fill(1), oil: 2, wt: { "2026-11-08": 130 } };
+  saved.ck[0][0] = 1;
+  const protectedStorage = localStorage({ mp4: JSON.stringify(saved) });
+  const protectedRun = runScript(inlineScript("meals.html"), "meals.html#saved-data", { storage: protectedStorage });
+  const preserved = JSON.parse(protectedStorage.getItem("mp4"));
+  assert.deepEqual(preserved.plan, customPlan, "a customized meal plan is not replaced");
+  assert.equal(preserved.target, 2444);
+  assert.equal(preserved.ck[0][0], 1);
+  assert.equal(preserved.inv["Chicken breast"], 1234);
+  assert.equal(preserved.wt["2026-11-08"], 130);
+  assert.match(protectedRun.dom.document.getElementById("app").innerHTML, /Meals/);
+
+  const legacy = { target: 2809, plan: JSON.parse(JSON.stringify(context.OLDPLAN)), ck: Array.from({ length: 14 }, () => [0, 0, 0, 0]), inv: { "Chicken breast": 1234 }, snack: Array(14).fill(1), oil: 1, ex: Array(14).fill(25), md: Array.from({ length: 14 }, () => [0, 0]), sd: Array(14).fill(0), wt: { "2026-11-08": 130 } };
+  const legacyStorage = localStorage({ mp4: JSON.stringify(legacy) });
+  runScript(inlineScript("meals.html"), "meals.html#legacy-default", { storage: legacyStorage });
+  const migrated = JSON.parse(legacyStorage.getItem("mp4"));
+  assert.deepEqual(migrated.plan, JSON.parse(JSON.stringify(context.NEWPLAN)), "an untouched old suggested plan can safely adopt the new suggestion");
+  assert.equal(migrated.target, 2670);
+  assert.equal(migrated.inv["Chicken breast"], 1234);
+  assert.equal(migrated.oil, 1);
+  assert.equal(migrated.ex[0], 25);
+  assert.equal(migrated.wt["2026-11-08"], 130);
 });
 
 test("Lift covers all major muscle groups, adds forearm and core work, and labels each target", () => {
