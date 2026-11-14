@@ -60,12 +60,13 @@ function makeDom() {
     },
   });
   fixed.set("app", app);
-  for (const id of ["routine-view", "embedded-meals", "embedded-lift", "xp-badge", "mealsFrame", "liftFrame", "timer", "tx", "t1", "t2", "t3", "modalroot", "tb", "tt"]) fixed.set(id, element(id));
-  for (const id of ["embedded-meals", "embedded-lift"]) fixed.get(id).classList = classList();
+  for (const id of ["routine-view", "embedded-meals", "embedded-lift", "embedded-learning", "xp-badge", "mealsFrame", "liftFrame", "learningFrame", "timer", "tx", "t1", "t2", "t3", "modalroot", "tb", "tt"]) fixed.set(id, element(id));
+  for (const id of ["embedded-meals", "embedded-lift", "embedded-learning"]) fixed.get(id).classList = classList();
   fixed.get("routine-view").hidden = false;
   fixed.get("mealsFrame").contentWindow = { frame: "meals" };
   fixed.get("liftFrame").contentWindow = { frame: "lift" };
-  const navButtons = ["today", "week", "edit", "meals", "lift"].map((section) => {
+  fixed.get("learningFrame").contentWindow = { frame: "learning" };
+  const navButtons = ["today", "week", "learning", "edit", "meals", "lift"].map((section) => {
     const button = element("nav-" + section);
     button.dataset = { section };
     return button;
@@ -140,6 +141,9 @@ test("RoutineHub XP, ranks, quests, route navigation and old customizations work
   assert.match(dom.document.getElementById("app").innerHTML, /My saved walk/);
   assert.equal(JSON.parse(storage.getItem("rt1")).r[0].n, "My saved walk");
   assert.equal(JSON.parse(storage.getItem("rt1")).wt, 1800);
+  assert.equal(context.S.v, 21, "routine schedule migration adds the learning session without dropping the saved routine");
+  assert(context.S.r.some((item) => /Network\+ learning session/.test(item.n)), "the routine includes a dedicated weekday learning session");
+  assert.equal(context.S.r.find((item) => /Network\+ learning session/.test(item.n)).d, "wk", "the five weekday sessions reserve five hours each week");
   assert.equal(context.S.r.filter((item) => /floss|interdental/i.test(item.n)).length, 1, "one floss reminder is present");
   assert.equal(context.S.r.filter((item) => /tongue/i.test(item.n)).length, 1, "one tongue-cleaning reminder is present");
   assert.equal(storage.getItem("mp4"), "preserve-meals");
@@ -188,13 +192,17 @@ test("RoutineHub XP, ranks, quests, route navigation and old customizations work
   } };
   assert.equal(context.validRoutineBackup(backup), true, "combined backups include the XP ledger in the existing RoutineHub store");
   assert.equal(JSON.parse(backup.stores.rt1).xp.total, 250);
+  const learningBackup = structuredClone(backup);
+  learningBackup.stores["networkplus12.done.v1"] = JSON.stringify([1, 4, 12]);
+  assert.equal(context.validRoutineBackup(learningBackup), true, "combined backups accept saved learning-week progress");
 
-  for (const section of ["week", "edit", "meals", "lift", "today"]) {
+  for (const section of ["week", "learning", "edit", "meals", "lift", "today"]) {
     dom.navButtons.find((node) => node.dataset.section === section).click();
     if (section === "week") assert.match(dom.document.getElementById("app").innerHTML, /This week/);
     if (section === "edit") assert.match(dom.document.getElementById("app").innerHTML, /Routine settings/);
     if (section === "meals") assert.equal(dom.document.getElementById("embedded-meals").classList.contains("active"), true);
     if (section === "lift") assert.equal(dom.document.getElementById("embedded-lift").classList.contains("active"), true);
+    if (section === "learning") assert.equal(dom.document.getElementById("embedded-learning").classList.contains("active"), true);
   }
   context.save();
   assert.equal(JSON.parse(storage.getItem("rt1")).xp.total, context.S.xp.total);
@@ -235,7 +243,7 @@ test("oral-care defaults sequence floss before brushing and keep mouthwash separ
   assert.equal(routine.find((item) => item.id === 13).t, "18:00");
 });
 
-test("routine v20 reorganizes an existing custom day while preserving labels and check-off history", () => {
+test("routine v21 reorganizes an existing custom day, adds weekday learning, and preserves labels and check-off history", () => {
   const saved = { r: [
     { id: 110, t: "23:00", n: "Start wind-down: dim lights, lower stimulation and stop busy tasks", c: "sleep" },
     { id: 111, t: "23:15", n: "Put phone away or use a calm activity; keep bedroom cool, dark and quiet", c: "sleep" },
@@ -270,7 +278,8 @@ test("routine v20 reorganizes an existing custom day while preserving labels and
   assert.equal(context.S.days["2026-11-08"].d[114], 1);
   assert.equal(context.S.days["2026-11-08"].w, 1250);
   assert.equal(context.S.days["2026-11-08"].sl, 7.5);
-  assert.equal(context.S.v, 20);
+  assert.equal(context.S.v, 21);
+  assert.equal(context.S.r.find((item) => /Network\+ learning session/.test(item.n)).d, "wk");
 });
 
 test("skincare guidance expands under the morning and evening routine items", () => {
@@ -715,8 +724,13 @@ test("all inline scripts parse and required offline assets are cached", () => {
   new vm.Script(read("sw.js"), { filename: "sw.js" });
   new vm.Script(inlineScript("meals.html"), { filename: "meals.html#inline" });
   new vm.Script(inlineScript("lift.html"), { filename: "lift.html#inline" });
+  new vm.Script(inlineScript("learning.html"), { filename: "learning.html#inline" });
+  const hub = read("index.html");
+  assert.match(hub, /data-section="learning"/, "Learning has a global navigation button");
+  assert.match(hub, /id="learningFrame" title="Learning" src="learning.html"/, "Learning opens inside the unified app");
+  assert.match(read("learning.html"), /networkplus12\.done\.v1/, "planner progress retains its browser-storage key");
   const manifest = JSON.parse(read("manifest.json"));
   assert.equal(manifest.theme_color, "#101013");
   const cache = read("sw.js");
-  for (const file of ["index.html", "routine-theme.css", "routine.js", "meals.html", "lift.html", "manifest.json", "icon-192.png", "icon-512.png"]) assert(cache.includes(`./${file}`), `${file} is in the offline cache`);
+  for (const file of ["index.html", "routine-theme.css", "routine.js", "meals.html", "lift.html", "learning.html", "manifest.json", "icon-192.png", "icon-512.png"]) assert(cache.includes(`./${file}`), `${file} is in the offline cache`);
 });

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101013">
+<title>Learning | RoutineHub</title>
+<link rel="stylesheet" href="routine-theme.css">
+<style>
+*{box-sizing:border-box}
+body.learning-page{margin:0;padding:0 0 24px;background:radial-gradient(ellipse at 50% -15%,#342b21 0%,var(--rh-bg,#101013) 56%);color:var(--rh-text,#eee8dc);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.learning-page a{color:var(--rh-accent,#c49a5a);text-underline-offset:3px}
+.learning-page .hero{background:radial-gradient(ellipse at 85% 10%,#554126 0,transparent 38%),linear-gradient(125deg,#151310,#241f19 75%);color:var(--rh-text,#eee8dc);padding:27px max(18px,calc((100vw - 1100px)/2)) 25px;border-bottom:1px solid var(--rh-line,#494039)}
+.learning-page .hero-inner{max-width:1100px;margin:auto}
+.learning-page .eyebrow{color:var(--rh-accent,#c49a5a);text-transform:uppercase;letter-spacing:.14em;font-size:.7rem;font-weight:800}
+.learning-page .hero h1{font-size:clamp(1.8rem,4vw,2.7rem);letter-spacing:-.04em;line-height:1.08;margin:8px 0}
+.learning-page .hero p{max-width:760px;color:var(--rh-muted,#aaa092);font-size:.95rem;margin:9px 0 16px}
+.learning-page .pills{display:flex;gap:8px;flex-wrap:wrap}
+.learning-page .pill{border:1px solid #79603c;background:#211b15;color:#e5c58e;border-radius:99px;padding:5px 10px;font-size:.78rem}
+.learning-page .layout{max-width:1100px;padding:0 18px;margin:20px auto 35px;display:grid;grid-template-columns:245px minmax(0,1fr);gap:16px;align-items:start}
+.learning-page .side{position:sticky;top:12px}
+.learning-page .panel,.learning-page .week,.learning-page .resource{background:linear-gradient(145deg,#232126,#19191d);border:1px solid var(--rh-line,#494039);border-radius:16px;box-shadow:var(--rh-shadow,0 14px 36px #0006)}
+.learning-page .panel{padding:15px;margin-bottom:12px}
+.learning-page .panel h2,.learning-page .panel h3{margin:0 0 9px;font-size:.95rem}
+.learning-page .progressline{display:flex;justify-content:space-between;font-size:.8rem;color:var(--rh-muted,#aaa092);margin-bottom:6px}
+.learning-page progress{width:100%;height:8px;accent-color:var(--rh-accent,#c49a5a)}
+.learning-page .progress-note,.learning-page .tiny{color:var(--rh-muted,#aaa092);font-size:.75rem}
+.learning-page .progress-note{margin-top:7px}
+.learning-page .jump{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.learning-page .jump a{border:1px solid var(--rh-line,#494039);border-radius:8px;text-align:center;padding:5px 0;text-decoration:none;font-size:.82rem;color:var(--rh-text,#eee8dc)}
+.learning-page .jump a:hover{background:#342b21}
+.learning-page .jump a.done{background:#2e281e;border-color:#8e7045;color:#e5c58e}
+.learning-page .resources{display:grid;gap:9px}
+.learning-page .resource{padding:12px 13px}
+.learning-page .resource h3{font-size:.9rem;margin:0 0 3px}
+.learning-page .resource p{font-size:.78rem;color:var(--rh-muted,#aaa092);margin:0 0 4px}
+.learning-page .resource a{font-weight:700;font-size:.82rem}
+.learning-page .main-head{display:flex;justify-content:space-between;gap:12px;align-items:end;margin:0 0 12px}
+.learning-page .main-head h2{margin:0;font-size:1.35rem;letter-spacing:-.025em}
+.learning-page .main-head p{margin:2px 0 0;color:var(--rh-muted,#aaa092);font-size:.84rem}
+.learning-page .button{border:1px solid #79603c;background:#211b15;color:#e5c58e;padding:8px 11px;border-radius:10px;font:inherit;font-size:.8rem;cursor:pointer}
+.learning-page .button:hover{background:#342b21}
+.learning-page .weeks{display:grid;gap:10px}
+.learning-page .week{overflow:hidden;scroll-margin-top:12px}
+.learning-page .week summary{list-style:none;cursor:pointer;padding:14px 15px;display:grid;grid-template-columns:42px 1fr auto;gap:11px;align-items:center}
+.learning-page .week summary::-webkit-details-marker{display:none}
+.learning-page .week summary:after{content:'+';font-size:1.2rem;color:var(--rh-muted,#aaa092);margin-left:5px}
+.learning-page .week[open] summary:after{content:'−'}
+.learning-page .number{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:#32291d;color:#e5c58e;font-weight:850}
+.learning-page .week.done .number{background:#3b3020;color:#f1d49b}
+.learning-page .week-title{font-size:.96rem;font-weight:800;line-height:1.3}
+.learning-page .week-kicker{font-size:.76rem;color:var(--rh-muted,#aaa092);margin-top:3px}
+.learning-page .badge{border-radius:99px;background:#29262a;padding:4px 8px;color:#c3b7a4;font-size:.72rem;white-space:nowrap}
+.learning-page .week.done .badge{background:#32291d;color:#e5c58e}
+.learning-page .weekbody{border-top:1px solid var(--rh-line,#494039);padding:13px 15px 15px 68px}
+.learning-page .weekbody p{margin:0 0 10px;color:#d2c9bc}
+.learning-page .columns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.learning-page .subcard{border:1px solid var(--rh-line,#494039);background:#17171a;border-radius:12px;padding:10px 11px}
+.learning-page .subcard h4{font-size:.73rem;letter-spacing:.07em;text-transform:uppercase;color:var(--rh-accent,#c49a5a);margin:0 0 6px}
+.learning-page .subcard ul{padding-left:18px;margin:0}
+.learning-page .subcard li{margin:4px 0;font-size:.83rem}
+.learning-page .checkrow{border-top:1px dashed var(--rh-line,#494039);margin-top:11px;padding-top:10px;display:flex;align-items:start;gap:9px;font-size:.82rem}
+.learning-page .checkrow input{margin-top:4px;accent-color:var(--rh-accent,#c49a5a)}
+.learning-page .time{color:#e5c58e;font-size:.77rem;font-weight:700}
+.learning-page .milestone{margin-top:10px;padding:10px 12px;background:#2b2419;border-left:3px solid var(--rh-accent,#c49a5a);border-radius:7px;font-size:.82rem}
+.learning-page .footer{color:var(--rh-muted,#aaa092);font-size:.77rem;padding:15px 3px}
+.learning-page .print{display:none}
+@media(max-width:820px){.learning-page .layout{grid-template-columns:1fr}.learning-page .side{position:static;display:grid;grid-template-columns:1fr 1fr;gap:10px}.learning-page .panel{margin:0}.learning-page .jump-panel{grid-column:1/-1}}
+@media(max-width:560px){.learning-page .hero{padding:21px 15px}.learning-page .layout{padding:0 12px;margin-top:13px}.learning-page .side{display:flex;flex-direction:column}.learning-page .week summary{grid-template-columns:38px 1fr auto;gap:8px;padding:12px}.learning-page .number{width:36px;height:36px}.learning-page .weekbody{padding:12px}.learning-page .columns{grid-template-columns:1fr}.learning-page .badge{display:none}.learning-page .main-head{align-items:start;flex-direction:column}}
+@media print{.learning-page body{background:#fff}.learning-page .hero{padding:22px;background:#241f19!important;print-color-adjust:exact}.learning-page .layout{display:block;margin:12px auto;padding:0 10px}.learning-page .side,.learning-page .main-head .button{display:none}.learning-page .week{box-shadow:none;break-inside:avoid;margin-bottom:8px}.learning-page .week:not([open]) .weekbody{display:block}.learning-page .week summary{padding:9px}.learning-page .weekbody{padding:10px}.learning-page .resource{box-shadow:none}.learning-page .print{display:block}}
+</style>
+</head>
+<body class="learning-page">
+<header class="hero"><div class="hero-inner"><div class="eyebrow">A beginner-friendly roadmap</div><h1>Network+<br>12-week learning planner</h1><p>Build a steady foundation in networking, practise the ideas in small labs, and finish with a troubleshooting project you can explain. This is a learning plan, not a promise that you’ll be exam-ready in 12 weeks.</p><div class="pills"><span class="pill">~4–6 hours per week</span><span class="pill">Beginner friendly</span><span class="pill">CompTIA Network+ N10-009</span></div></div></header>
+<div class="layout"><aside class="side"><section class="panel"><h2>Your progress</h2><div class="progressline"><span id="progressText">0 of 12 weeks complete</span><span id="progressPct">0%</span></div><progress id="progress" value="0" max="12"></progress><div class="progress-note">Your checkmarks save in this browser on this device.</div></section><section class="panel jump-panel"><h3>Jump to a week</h3><nav class="jump" id="jump"></nav></section><section class="panel"><h3>Study rhythm</h3><div class="tiny"><b>Each week:</b> learn a topic, make short notes, try a practical task, then explain what you learned without looking. Split the time into 3–4 short sessions if that works better.</div></section></aside>
+<main><div class="main-head"><div><h2>Your 12-week plan</h2><p>Open a week to see the focus, tasks and a completion check.</p></div><button class="button" onclick="window.print()">Print planner</button></div><div class="weeks" id="weeks"></div><div class="footer"><b>Exam note:</b> This planner follows the N10-009 topic areas at a beginner pace. Check CompTIA’s current exam objectives before booking an exam; use them as the final checklist. Course details and exam versions can change.</div></main></div>
+<script>
+const weeks=[
+{title:'How networks fit together',tag:'Foundations',goal:'Get a mental map of a small network and learn what the main devices do.',learn:['Network types: LAN, WAN, internet, intranet','Routers, switches, access points, firewalls, servers and clients','Basic topologies and the purpose of the OSI model'],do:['Draw your home network. Label the router, Wi-Fi, devices and internet connection.','Watch a short set of N10-009 videos on network devices and the OSI model.','Write one sentence on what a switch does and one on what a router does.'],done:'I can describe the path a device takes to reach a website and name the main network devices.'},
+{title:'The language of network communication',tag:'Models & media',goal:'Understand how data moves across a network and the common media it travels over.',learn:['OSI and TCP/IP models as troubleshooting maps','Ethernet, copper and fibre basics','Frames, packets and encapsulation at a high level'],do:['Sketch a message travelling from a laptop through a router to a website.','Compare copper Ethernet, fibre and Wi-Fi: where might each be used?','Practise explaining why layered models help narrow down a fault.'],done:'I can use the OSI layers as a simple way to describe where a problem might be.'},
+{title:'IP addressing and subnetting',tag:'Addressing',goal:'Build confidence reading IPv4 addresses and understanding local networks.',learn:['IPv4 address, subnet mask/prefix, network and host portions','Private vs public addresses; default gateway','Subnetting basics: network, usable host range and broadcast address'],do:['Find your device IP and gateway with ipconfig (Windows) or ip addr (Linux/macOS).','Do a few beginner subnetting examples; focus on understanding, not speed.','Identify whether sample addresses are private or public.'],done:'I can explain what an IP address, prefix and default gateway are, and solve basic subnet questions.'},
+{title:'IPv6 and getting an address',tag:'Addressing',goal:'See how devices receive network settings and meet the basics of IPv6.',learn:['DHCP and the address lease process','DNS purpose and basic name resolution','IPv6 notation, prefix and common address types'],do:['Use nslookup to look up a familiar domain.','Check your device’s network settings and identify DNS and DHCP-related information.','Practise recognising IPv4 and IPv6 addresses.'],done:'I can explain how DHCP gives a device settings and how DNS helps find a service.'},
+{title:'Ports, protocols and everyday services',tag:'Protocols',goal:'Connect familiar applications to the protocols and ports they use.',learn:['TCP vs UDP and when reliability matters','Common ports: DNS, DHCP, HTTP/HTTPS, SSH, SMTP, RDP and NTP','Client/server communication and basic firewall rules'],do:['Make flashcards for a small set of common ports; add what each service does.','Use a browser and describe DNS lookup followed by an HTTPS connection.','Explain the difference between a port and an IP address.'],done:'I can name several common services and explain TCP vs UDP in plain language.'},
+{title:'Switching, VLANs and network layouts',tag:'Switching',goal:'Understand how devices communicate on a local network and how it can be divided.',learn:['MAC addresses and switch forwarding','VLAN purpose, access ports and trunks','Physical and logical network diagrams'],do:['Use Packet Tracer to connect two PCs through a switch and test connectivity.','Build two VLANs in a guided beginner lab if ready; observe what changes.','Draw a small office layout with a guest Wi-Fi network separated from staff.'],done:'I can explain how a switch forwards local traffic and why VLANs are useful.'},
+{title:'Routing and troubleshooting tools',tag:'Routing',goal:'Learn how traffic reaches other networks and practise a repeatable troubleshooting approach.',learn:['Default routes and routing tables','NAT/PAT at a high level','ping, tracert/traceroute, ipconfig/ifconfig, nslookup and netstat'],do:['Run ping to your gateway and a public address; note what each test tells you.','Run tracert/traceroute to a website and observe the hops.','Use a simple checklist: physical/Wi-Fi, IP settings, gateway, DNS, application.'],done:'I can use basic commands and explain what each result suggests.'},
+{title:'Wireless, cabling and network hardware',tag:'Infrastructure',goal:'Recognise common connectivity hardware and the basics of Wi-Fi.',learn:['Wi-Fi bands, channels, SSID and encryption basics','Ethernet cabling and common interface issues','Modems, routers, switches, APs and transceivers'],do:['Check your Wi-Fi band and signal strength; note possible sources of interference.','Learn the difference between WPA2 and WPA3 at a high level.','Look at a network diagram and identify where an access point and switch belong.'],done:'I can list a few reasons Wi-Fi or a wired link might be slow or unavailable.'},
+{title:'Security fundamentals for networks',tag:'Security',goal:'Understand the everyday controls that protect network devices and traffic.',learn:['Least privilege, authentication, MFA and access control','Firewalls, ACLs, VPNs and network segmentation','Common threats and basic hardening practices'],do:['Create a short checklist for securing a home router (unique admin password, updates, secure Wi-Fi).','Draw where a firewall and VPN fit in a simple network.','Explain how segmentation can limit the impact of a compromised device.'],done:'I can describe several network security controls and the problem each addresses.'},
+{title:'Monitoring, logs and troubleshooting process',tag:'Operations',goal:'Learn how network teams observe service health and investigate issues.',learn:['SNMP, syslog, flow data and monitoring concepts','Availability, latency, jitter, packet loss and throughput','Ticket notes: symptoms, scope, evidence, action and outcome'],do:['Create a sample troubleshooting note for a fictional “can’t reach website” report.','Compare latency, packet loss and bandwidth in your own words.','Explore a sample Wireshark capture or run a short capture on your own device; identify DNS and TCP conversations.'],done:'I can record a clear troubleshooting finding and distinguish latency from packet loss.'},
+{title:'Network services, cloud and virtual networks',tag:'Services',goal:'Connect network basics to common infrastructure services and modern environments.',learn:['NTP, QoS, VPN and load-balancing concepts','Virtual machines, virtual switches and cloud network basics','Backup/restore and configuration documentation'],do:['Sketch a simple cloud app path: user, DNS, internet, cloud network, application.','Explain why accurate time (NTP) matters for logs and troubleshooting.','Write a one-page network diagram legend for a small company.'],done:'I can explain where common services fit and how virtual networks resemble physical ones.'},
+{title:'Review and mini network analyst project',tag:'Capstone',goal:'Bring the skills together in a small design-and-troubleshooting exercise.',learn:['Review weak areas using the N10-009 objectives checklist','Troubleshooting methodology and clear technical communication','Next steps: deeper labs, exam prep or entry-level support experience'],do:['Design a small office network with staff, guest Wi-Fi, a printer, a switch, router/firewall and internet. Label IP ranges and services.','Introduce one fault (wrong gateway, failed DNS or bad cable) and write the steps you’d use to isolate it.','Record a short portfolio note: diagram, issue, evidence, fix and what you learned.'],done:'I can walk someone through my design and troubleshoot one issue step by step.',milestone:'After week 12, compare your knowledge against every N10-009 objective. Spend extra time on gaps before deciding whether to book the exam.'}
+];
+const resources=[
+{title:'Main video course · Professor Messer',text:'Free N10-009 Network+ videos, organised by topic.',url:'https://www.professormesser.com/network-plus/n10-009/n10-009-video/n10-009-training-course/',label:'Open the video course'},
+{title:'Structured beginner course · Cisco Networking Academy',text:'Networking Basics is self-paced and starts from the beginning.',url:'https://www.netacad.com/courses/networking-basics',label:'Open Networking Basics'},
+{title:'Packet Tracer · Cisco Networking Academy',text:'Free simulator course to download and start using Packet Tracer.',url:'https://www.netacad.com/courses/getting-started-cisco-packet-tracer',label:'Get started with Packet Tracer'},
+{title:'Official exam checklist · CompTIA',text:'Use the objectives as a topic checklist. This plan is for N10-009.',url:'https://partners.comptia.org/docs/default-source/resources/comptia-network-n10-009-exam-objectives-(4-0)',label:'View N10-009 objectives'},
+{title:'Packet analysis · Wireshark',text:'Official documentation for exploring packet captures.',url:'https://www.wireshark.org/docs/',label:'Open Wireshark documentation'}
+];
+const doneKey='networkplus12.done.v1';let done=new Set(JSON.parse(localStorage.getItem(doneKey)||'[]'));const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+document.getElementById('jump').innerHTML=weeks.map((_,i)=>`<a href="#week-${i+1}" id="jump-${i+1}">${i+1}</a>`).join('');
+document.getElementById('weeks').innerHTML=weeks.map((w,i)=>`<details class="week ${done.has(i+1)?'done':''}" id="week-${i+1}" ${i===0?'open':''}><summary><span class="number">${String(i+1).padStart(2,'0')}</span><span><span class="week-title">${esc(w.title)}</span><div class="week-kicker">${esc(w.goal)}</div></span><span class="badge">${esc(w.tag)}</span></summary><div class="weekbody"><p><span class="time">Suggested effort: 4–6 hours</span> · Spread across a few short sessions; take more time if you need it.</p><div class="columns"><section class="subcard"><h4>Learn</h4><ul>${w.learn.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></section><section class="subcard"><h4>Practise</h4><ul>${w.do.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></section></div>${w.milestone?`<div class="milestone"><b>Milestone:</b> ${esc(w.milestone)}</div>`:''}<label class="checkrow"><input type="checkbox" data-week="${i+1}" ${done.has(i+1)?'checked':''}><span><b>Week complete</b><br><span class="tiny">${esc(w.done)}</span></span></label></div></details>`).join('');
+document.querySelectorAll('[data-week]').forEach(cb=>cb.addEventListener('change',()=>{const n=Number(cb.dataset.week);cb.checked?done.add(n):done.delete(n);localStorage.setItem(doneKey,JSON.stringify([...done]));renderProgress()}));
+function renderProgress(){const n=done.size;document.getElementById('progress').value=n;document.getElementById('progressText').textContent=`${n} of 12 weeks complete`;document.getElementById('progressPct').textContent=`${Math.round(n/12*100)}%`;weeks.forEach((_,i)=>{const id=i+1,el=document.getElementById(`week-${id}`),jump=document.getElementById(`jump-${id}`);el.classList.toggle('done',done.has(id));jump.classList.toggle('done',done.has(id))})}renderProgress();
+</script>
+</body>
+</html>
+
+

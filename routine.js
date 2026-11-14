@@ -12,7 +12,7 @@ var DEF=[
 {id:35,t:"08:40",n:"Apply deodorant to clean, dry underarms; moisturise dry body areas",c:"free"},
 {id:37,t:"08:55",n:"Comb/style hair and apply fragrance (start with 1–2 sprays)",c:"free"},
 {id:3,t:"09:00",n:"Breakfast and 5g creatine if this is part of your plan",c:"eat"},
-{id:4,t:"10:00",n:"Study / focused work block 1",c:"study"},
+{id:4,t:"10:00",n:"Network+ learning session (60 min)",c:"study",d:"wk"},
 {id:5,t:"11:00",n:"Drink water and stretch for 5 minutes",c:"water",ml:250},
 {id:6,t:"11:30",n:"Walk outside for 20–30 minutes",c:"move"},
 {id:7,t:"12:30",n:"Protein snack or shake if it fits your nutrition plan",c:"eat",ml:300},
@@ -147,11 +147,16 @@ if(routineVersion<20){
  ensureRoutineTask(66,/phone away|put.*phone away|screen[s]? off|stop using.*screen/i);
  if(!S.r.some(function(item){var label=String(item.n||""),hour=parseInt(String(item.t||"00:00").slice(0,2),10)||0;return /movement break|short movement|drink water and stretch/i.test(label)&&hour>=15&&hour<18})){var movement=JSON.parse(JSON.stringify(DEF.filter(function(item){return item.id===11})[0]));if(S.r.some(function(item){return item.id===movement.id}))movement.id=S.r.reduce(function(max,item){return Math.max(max,+item.id||0)},0)+1;S.r.push(movement)}
 }
+if(routineVersion<21){
+ var learnBlock=S.r.filter(function(item){return item.id===4})[0];
+ if(learnBlock&&learnBlock.n==="Study / focused work block 1"){learnBlock.n="Network+ learning session (60 min)";learnBlock.d="wk"}
+ if(!S.r.some(function(item){return /network\+ learning session/i.test(String(item.n||""))})){var seed=JSON.parse(JSON.stringify(DEF.filter(function(item){return item.id===4})[0]));if(S.r.some(function(item){return item.id===seed.id}))seed.id=S.r.reduce(function(max,item){return Math.max(max,+item.id||0)},0)+1;S.r.push(seed)}
+}
 if(!Number.isFinite(+S.wt)||S.wt<1)S.wt=2000;
 if(!S.xp||typeof S.xp!=="object")S.xp={total:0,days:{}};
 if(!Number.isFinite(+S.xp.total)||S.xp.total<0)S.xp.total=0;else S.xp.total=+S.xp.total;
 if(!S.xp.days||typeof S.xp.days!=="object")S.xp.days={};
-S.v=20;
+S.v=21;
 function save(){try{localStorage.setItem("rt1",JSON.stringify(S))}catch(e){alert("RoutineHub could not save your change. Browser storage may be full or disabled.")}}
 save();
 function key(d){d=d||new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
@@ -233,24 +238,24 @@ function bind(){var q=function(s){return document.querySelectorAll(s)};
  q("[data-all]").forEach(function(e){e.onclick=function(){if(e.dataset.all==="export")exportAllData();else document.getElementById("backupFile").click()}});
  var bf=document.getElementById("backupFile");if(bf)bf.onchange=restoreAllData;
 }
-function exportAllData(){var stores={};["rt1","mp4","lift_redesign_v1"].forEach(function(k){stores[k]=localStorage.getItem(k)});var blob=new Blob([JSON.stringify({format:"RoutineHubBackup",version:1,createdAt:new Date().toISOString(),stores:stores},null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="routinehub-backup-"+key()+".json";a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000)}
-function validRoutineBackup(x){if(!x||x.format!=="RoutineHubBackup"||x.version!==1||!x.stores)return false;try{["rt1","mp4","lift_redesign_v1"].forEach(function(k){if(!Object.prototype.hasOwnProperty.call(x.stores,k))throw Error()});if(typeof x.stores.rt1!=="string"||!x.stores.rt1||["mp4","lift_redesign_v1"].some(function(k){return x.stores[k]!==null&&(typeof x.stores[k]!=="string"||!x.stores[k])}))return false;var r=JSON.parse(x.stores.rt1),m=x.stores.mp4===null?null:JSON.parse(x.stores.mp4),l=x.stores.lift_redesign_v1===null?null:JSON.parse(x.stores.lift_redesign_v1);return r&&Array.isArray(r.r)&&r.days&&(x.stores.mp4===null||(m&&Array.isArray(m.plan)&&m.plan.length===14))&&(x.stores.lift_redesign_v1===null||(l&&l.logs&&typeof l.logs==="object"))}catch(e){return false}}
-function restoreAllData(e){var f=e.target.files&&e.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var x;try{x=JSON.parse(rd.result)}catch(err){}if(!validRoutineBackup(x)){alert("This is not a valid RoutineHub full backup.");e.target.value="";return}if(!confirm("Restore this backup? A backup of the current app data will download first.")){e.target.value="";return}exportAllData();try{["rt1","mp4","lift_redesign_v1"].forEach(function(k){if(x.stores[k]===null)localStorage.removeItem(k);else localStorage.setItem(k,x.stores[k])});location.reload()}catch(err){alert("Restore could not finish because browser storage is unavailable. Your previous data backup was downloaded first.")}};rd.readAsText(f)}
+function exportAllData(){var stores={};["rt1","mp4","lift_redesign_v1","networkplus12.done.v1"].forEach(function(k){stores[k]=localStorage.getItem(k)});var blob=new Blob([JSON.stringify({format:"RoutineHubBackup",version:1,createdAt:new Date().toISOString(),stores:stores},null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="routinehub-backup-"+key()+".json";a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000)}
+function validRoutineBackup(x){if(!x||x.format!=="RoutineHubBackup"||x.version!==1||!x.stores)return false;try{["rt1","mp4","lift_redesign_v1"].forEach(function(k){if(!Object.prototype.hasOwnProperty.call(x.stores,k))throw Error()});if(typeof x.stores.rt1!=="string"||!x.stores.rt1||["mp4","lift_redesign_v1"].some(function(k){return x.stores[k]!==null&&(typeof x.stores[k]!=="string"||!x.stores[k])}))return false;var r=JSON.parse(x.stores.rt1),m=x.stores.mp4===null?null:JSON.parse(x.stores.mp4),l=x.stores.lift_redesign_v1===null?null:JSON.parse(x.stores.lift_redesign_v1),lp=x.stores["networkplus12.done.v1"]==null?null:JSON.parse(x.stores["networkplus12.done.v1"]);return r&&Array.isArray(r.r)&&r.days&&(x.stores.mp4===null||(m&&Array.isArray(m.plan)&&m.plan.length===14))&&(x.stores.lift_redesign_v1===null||(l&&l.logs&&typeof l.logs==="object"))&&(lp===null||(Array.isArray(lp)&&lp.every(function(w){return Number.isInteger(w)&&w>=1&&w<=12})))}catch(e){return false}}
+function restoreAllData(e){var f=e.target.files&&e.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var x;try{x=JSON.parse(rd.result)}catch(err){}if(!validRoutineBackup(x)){alert("This is not a valid RoutineHub full backup.");e.target.value="";return}if(!confirm("Restore this backup? A backup of the current app data will download first.")){e.target.value="";return}exportAllData();try{["rt1","mp4","lift_redesign_v1"].forEach(function(k){if(x.stores[k]===null)localStorage.removeItem(k);else localStorage.setItem(k,x.stores[k])});if(Object.prototype.hasOwnProperty.call(x.stores,"networkplus12.done.v1")){if(x.stores["networkplus12.done.v1"]===null)localStorage.removeItem("networkplus12.done.v1");else localStorage.setItem("networkplus12.done.v1",x.stores["networkplus12.done.v1"])}location.reload()}catch(err){alert("Restore could not finish because browser storage is unavailable. Your previous data backup was downloaded first.")}};rd.readAsText(f)}
 function syncExistingRoutineQuest(){var rec=xpDay(),d=S.days[key()]||{d:{}};S.r.forEach(function(b){if(d.d&&d.d[b.id])rec.routines[String(b.id)]=true});completeQuests();save()}
 function handleQuestMessage(event){if(event.origin!==window.location.origin||!event.data||event.data.type!=="routinehub:xp")return;var mealFrame=document.getElementById("mealsFrame"),liftFrame=document.getElementById("liftFrame"),ok=false;if(mealFrame&&event.source===mealFrame.contentWindow&&event.data.activity==="meal"&&Number.isInteger(event.data.slot)&&event.data.slot>=0&&event.data.slot<=3)ok=awardActionXP("meal",event.data.slot);else if(liftFrame&&event.source===liftFrame.contentWindow&&event.data.activity==="lift")ok=awardActionXP("lift");if(ok){completeQuests();save();updateXPBadge();if(activeSection==="today"&&tab===1)render()}}
 function showHubTab(which){
- const m=document.getElementById("embedded-meals"),l=document.getElementById("embedded-lift"),routine=document.getElementById("routine-view");
- m.classList.remove("active");l.classList.remove("active");
+ const m=document.getElementById("embedded-meals"),l=document.getElementById("embedded-lift"),learn=document.getElementById("embedded-learning"),routine=document.getElementById("routine-view");
+ m.classList.remove("active");l.classList.remove("active");learn.classList.remove("active");
  routine.hidden=which!=="routine";
  document.querySelectorAll("[data-section]").forEach(b=>{const selected=b.dataset.section===activeSection;b.classList.toggle("active",selected);b.setAttribute("aria-current",selected?"page":"false")});
- if(which==="meals")m.classList.add("active");else if(which==="lift")l.classList.add("active");
+ if(which==="meals")m.classList.add("active");else if(which==="lift")l.classList.add("active");else if(which==="learning")learn.classList.add("active");
 }
 function showSection(section){
  activeSection=section;
  if(section==="today"||section==="week"||section==="edit"){
   tab=section==="today"?1:section==="week"?2:3;
   showHubTab("routine");render();
- }else if(section==="meals"||section==="lift")showHubTab(section);
+ }else if(section==="meals"||section==="lift"||section==="learning")showHubTab(section);
 }
 document.querySelectorAll("[data-section]").forEach(b=>b.onclick=function(){showSection(b.dataset.section)});
 var xpBadge=document.getElementById("xp-badge");if(xpBadge)xpBadge.onclick=function(){showSection("today")};
